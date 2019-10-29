@@ -446,33 +446,12 @@ default_unpack() {
 		else
 			s="$startdir/$u"
 		fi
-		case "$s" in
-			*.tar)
-				msg "Unpacking $s..."
-				tar -C "$srcdir" -xf "$s" || return 1;;
-			*.tar.gz|*.tgz)
-				msg "Unpacking $s..."
-				$gunzip -c "$s" | tar -C "$srcdir" -x || return 1;;
-			*.tar.bz2)
-				msg "Unpacking $s..."
-				tar -C "$srcdir" -jxf "$s" || return 1;;
-			*.tar.lz)
-				msg "Unpacking $s..."
-				tar -C "$srcdir" --lzip -xf "$s" || return 1;;
-			*.tar.lzma)
-				msg "Unpacking $s..."
-				unlzma -T 0 -c "$s" | tar -C "$srcdir" -x  \
-					|| return 1;;
-			*.tar.xz)
-				msg "Unpacking $s..."
-				local threads_opt
-				if [ $(readlink -f $(command -v unxz)) != "/usr/bin/busybox" ]; then
-					threads_opt="--threads=0"
-				fi
-				unxz $threads_opt -c "$s" | tar -C "$srcdir" -x || return 1;;
-			*.zip)
-				msg "Unpacking $s..."
-				unzip -n -q "$s" -d "$srcdir" || return 1;;
+		case $(file --mime-type -b "$s") in
+			"text/plain")
+				continue;;
+			*)
+				msg "bsdtar $s..."
+				bsdtar xf "$s" -C "$srcdir" --no-same-owner || return 1;;
 		esac
 	done
 }
