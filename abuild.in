@@ -447,7 +447,7 @@ default_unpack() {
 			s="$startdir/$u"
 		fi
 		case $(file --mime-type -b "$s") in
-			"text/plain")
+			text*)
 				continue;;
 			*)
 				msg "bsdtar $s..."
