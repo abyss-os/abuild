@@ -466,7 +466,7 @@ default_unpack() {
 			*.tar.xz)
 				msg "Unpacking $s..."
 				local threads_opt
-				if [ $(readlink -f $(command -v unxz)) != "/bin/busybox" ]; then
+				if [ $(readlink -f $(command -v unxz)) != "/usr/bin/busybox" ]; then
 					threads_opt="--threads=0"
 				fi
 				unxz $threads_opt -c "$s" | tar -C "$srcdir" -x || return 1;;
@@ -577,13 +577,9 @@ mkusers() {
 # helper to update config.sub to a recent version
 update_config_sub() {
 	find . -name config.sub | (local changed=false; while read f; do
-		if ! ./$f armv6-alpine-linux-muslgnueabihf 2>/dev/null; then
-			msg "Updating $f"
-			cp "$datadir"/${f##*/} "$f" || return 1
-			changed=true
-		else
-			msg "No update needed for $f"
-		fi
+		msg "Updating $f"
+		cp "$datadir"/${f##*/} "$f" || return 1
+		changed=true
 	done; $changed)
 }
 
@@ -971,17 +967,6 @@ prepare_metafiles() {
 	EOF
 	local i deps
 	deps="$depends"
-	if [ "$pkgname" != "busybox" ] && ! depends_has busybox && ! depends_has /bin/sh; then
-		for i in $install $triggers; do
-			local s=${i%=*}
-			[ "$name" != "${s%.*}" ] && continue
-			if head -n 1 "$startdir/$s" | grep '^#!/bin/sh' >/dev/null ; then
-				msg "Script found. /bin/sh added as a dependency for $pkg"
-				deps="$deps /bin/sh"
-				break
-			fi
-		done
-	fi
 
 	# store last_commit in global var so we only call git once
 	if [ -z "$last_commit" ]; then
@@ -1223,14 +1208,6 @@ trace_apk_deps() {
 	if [ -d "$pkgbasedir"/$name/usr/lib/pkgconfig ] \
 			&& ! grep -q '^depend = pkgconfig' "$dir"/.PKGINFO; then
 		autodeps="$autodeps pkgconfig"
-	fi
-
-	# special case for libpthread: we need depend on libgcc
-	if [ "$CLIBC" = "uclibc" ] && [ -f "$dir"/.needs-so ] \
-			&& grep -q -w '^libpthread.so.*' "$dir"/.needs-so \
-			&& ! grep -q -w "^depend = libgcc" "$dir"/.PKGINFO; then
-		autodeps="$autodeps libgcc"
-		msg "  added libgcc (due to libpthread)"
 	fi
 
 	[ -f "$dir"/.needs-so ] && for i in $(cat "$dir"/.needs-so); do
@@ -2081,15 +2058,13 @@ builddeps() {
 	[ -n "$nodeps" ] && return 0
 
 	msg "Analyzing dependencies..."
-	case "$BOOTSTRAP" in
-	no*)	BUILD_BASE="";;
-	*)	if cross_creating || cross_compiling; then
-			BUILD_BASE="build-base-$CTARGET_ARCH"
-		else
-			BUILD_BASE="build-base"
-		fi
-	esac
-	calcdeps "$BUILD_BASE"
+	if [ "$pkgname" = "filesystem" ]; then
+		calcdeps ""
+	elif [ "$pkgname" = "musl" ]; then
+		calcdeps "filesystem"
+	else
+		calcdeps "filesystem musl"
+	fi
 
 	# find which deps are missing
 	local mbd mhd missing
@@ -2261,7 +2236,10 @@ rootbld() {
 
 	calcdeps
 	$SUDO_APK add --initdb --root "$BUILD_ROOT" --update \
-		abuild alpine-base build-base git $hostdeps $builddeps
+		abuild filesystem
+
+	$SUDO_APK add --root "$BUILD_ROOT" --update \
+		abuild musl git $hostdeps $builddeps
 
 	local bwrap_opts=""
 	options_has "net" || bwrap_opts="$bwrap_opts --unshare-net"
@@ -2584,11 +2562,7 @@ while getopts "AcdD:fFhkKimnp:P:qrRs:uv" opt; do
 done
 shift $(( $OPTIND - 1 ))
 
-# check so we are not root
-if [ $(id -u) -eq 0 ] && [ -z "$FAKEROOTKEY" ]; then
-	[ -z "$forceroot" ] && die "Do not run abuild as root"
-	FAKEROOT=
-fi
+forceroot="-F"
 
 # find startdir
 [ -f "$APKBUILD" ] || die "Could not find $APKBUILD (PWD=$PWD)"
@@ -2606,8 +2580,9 @@ SRCDEST=${SRCDEST:-$startdir}
 BUILD_ROOT=
 
 # set a default CC
-: ${CC:=gcc}
-export CC
+: ${CC:=clang}
+: ${CXX:=clang++}
+export CC CXX
 
 cd "$startdir" || die
 . "$APKBUILD"
