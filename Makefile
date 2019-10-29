@@ -96,7 +96,7 @@ help:
 install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	install -d $(DESTDIR)/$(bindir) $(DESTDIR)/$(sysconfdir) \
 		$(DESTDIR)/$(datadir) $(DESTDIR)/$(mandir)/man1 \
-		$(DESTDIR)/$(mandir)/man5
+		$(DESTDIR)/$(mandir)/man5 $(DESTDIR)/$(sysconfdir)/sudoers.d
 	for i in $(USR_BIN_FILES); do\
 		install -m 755 $$i $(DESTDIR)/$(bindir)/$$i;\
 	done
@@ -113,6 +113,8 @@ install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	if [ -n "$(DESTDIR)" ] || [ ! -f "/$(sysconfdir)"/abuild.conf ]; then\
 		cp abuild.conf $(DESTDIR)/$(sysconfdir)/; \
 	fi
+	install -m0440 sudoers $(DESTDIR)/$(sysconfdir)/sudoers.d/abuild
+
 	cp $(SAMPLES) $(DESTDIR)/$(prefix)/share/abuild/
 	cp $(AUTOTOOLS_TOOLCHAIN_FILES) $(DESTDIR)/$(prefix)/share/abuild/
 	cp functions.sh $(DESTDIR)/$(datadir)/
