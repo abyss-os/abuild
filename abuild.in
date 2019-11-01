@@ -2542,6 +2542,7 @@ done
 shift $(( $OPTIND - 1 ))
 
 forceroot="-F"
+FAKEROOT=
 
 # find startdir
 [ -f "$APKBUILD" ] || die "Could not find $APKBUILD (PWD=$PWD)"
