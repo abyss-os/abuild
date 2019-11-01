@@ -451,7 +451,7 @@ default_unpack() {
 				continue;;
 			*)
 				msg "bsdtar $s..."
-				bsdtar xf "$s" -C "$srcdir" --no-same-owner || return 1;;
+				command bsdtar xf "$s" -C "$srcdir" --no-same-owner || return 1;;
 		esac
 	done
 }
