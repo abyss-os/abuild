@@ -28,9 +28,11 @@ else
 FULL_VERSION    := $(VERSION)
 endif
 
+CARCH		:= $(shell apk --print-arch)
 CHMOD		:= chmod
 SED		:= sed
 TAR		:= tar
+CC		:= clang
 LINK		= $(CC) $(OBJS-$@) -o $@ $(LDFLAGS) $(LDFLAGS-$@) $(LIBS-$@)
 
 SED_REPLACE	:= -e 's:@VERSION@:$(FULL_VERSION):g' \
@@ -94,7 +96,7 @@ help:
 	@echo "usage: make install [ DESTDIR=<path> ]"
 
 install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
-	install -d $(DESTDIR)/$(bindir) $(DESTDIR)/$(sysconfdir) \
+	install -d $(DESTDIR)/$(bindir) $(DESTDIR)/$(sysconfdir) $(DESTDIR)/$(sysconfdir)/abuild \
 		$(DESTDIR)/$(datadir) $(DESTDIR)/$(mandir)/man1 \
 		$(DESTDIR)/$(mandir)/man5 $(DESTDIR)/$(sysconfdir)/sudoers.d
 	for i in $(USR_BIN_FILES); do\
@@ -118,6 +120,8 @@ install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	cp $(SAMPLES) $(DESTDIR)/$(prefix)/share/abuild/
 	cp $(AUTOTOOLS_TOOLCHAIN_FILES) $(DESTDIR)/$(prefix)/share/abuild/
 	cp functions.sh $(DESTDIR)/$(datadir)/
+
+	install -m644 defaults_$(CARCH).conf $(DESTDIR)/$(sysconfdir)/abuild/defaults.conf
 
 .gitignore: Makefile
 	echo "*.tar.bz2" > $@
