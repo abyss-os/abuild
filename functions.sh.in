@@ -8,6 +8,7 @@ arch_to_hostspec() {
 	aarch64)	echo "aarch64-pc-linux-musl" ;;
 	mips64)         echo "mips64-pc-linux-musl" ;;
 	ppc64le)	echo "powerpc64le-pc-linux-musl" ;;
+	riscv64)	echo "riscv64-pc-linux-musl" ;;
 	x86_64)		echo "x86_64-pc-linux-musl" ;;
 	*)		echo "unknown" ;;
 	esac
@@ -18,6 +19,7 @@ hostspec_to_arch() {
 	aarch64*-*-*-*)		echo "aarch64" ;;
 	mips64-*-*-*)           echo "mips64" ;;
 	powerpc64le-*-*-*)	echo "ppc64le" ;;
+	riscv64-*-*-*)		echo "riscv64" ;;
 	x86_64-*-*-*)		echo "x86_64" ;;
 	*)			echo "unknown" ;;
 	esac
