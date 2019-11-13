@@ -61,17 +61,7 @@ error() {
 	logcmd "ERROR: $pkgname: $1"
 }
 
-cross_creating() {
-	test "$CHOST" != "$CTARGET" -a -n "$CBUILDROOT"
-}
-
-cross_compiling() {
-	test "$CBUILD" != "$CHOST" -a -n "$CBUILDROOT"
-}
-
 want_check() {
-	[ -n "$ABUILD_BOOTSTRAP" ] && return 1
-	cross_compiling && return 1
 	options_has "!check" && return 1
 	return 0
 }
@@ -1634,10 +1624,10 @@ default_dbg() {
 
 		cd "$ddbg_srcdir"
 		local xattr=$(getfattr --match="" --dump "${ddbg_srcfile}")
-		${CROSS_COMPILE}objcopy --only-keep-debug "$ddbg_srcfile" "$ddbg_dstfile"
-		${CROSS_COMPILE}objcopy --add-gnu-debuglink="$ddbg_dstfile" "$ddbg_srcdir/$ddbg_srcfile"
+		objcopy --only-keep-debug "$ddbg_srcfile" "$ddbg_dstfile"
+		objcopy --add-gnu-debuglink="$ddbg_dstfile" "$ddbg_srcdir/$ddbg_srcfile"
 		mv "$ddbg_dstfile" "$ddbg_dstdir"
-		${CROSS_COMPILE}strip "$ddbg_srcfile"
+		strip "$ddbg_srcfile"
 		if [ -n "$xattr" ]; then
 			echo "$xattr" | setfattr --restore=-
 		fi
@@ -1957,26 +1947,14 @@ calcdeps() {
 	builddeps=
 	hostdeps=
 
-	if cross_compiling && [ -n "$makedepends_build" -o -n "$makedepends_host" ]; then
-		for i in $EXTRADEPENDS_BUILD $1 $makedepends_build; do
-			list_has $i $hostdeps && continue
-			builddeps="$builddeps $i"
-		done
-		for i in $EXTRADEPENDS_HOST $EXTRADEPENDS_TARGET $makedepends_host; do
-			[ "$pkgname" = "${i%%[<>=]*}" ] && continue
-			list_has $i $hostdeps && continue
-			subpackages_has ${i%%[<>=]*} || hostdeps="$hostdeps $i"
-		done
-	else
-		[ -z "$makedepends" ] && makedepends="$makedepends_build $makedepends_host"
-		want_check && makedepends="$makedepends $checkdepends"
-		for i in $EXTRADEPENDS_BUILD $EXTRADEPENDS_HOST $1 $depends $makedepends; do
-			[ "$pkgname" = "${i%%[<>=]*}" ] && continue
-			list_has $i $builddeps && continue
-			subpackages_has ${i%%[<>=]*} || builddeps="$builddeps $i"
-		done
-		hostdeps="$EXTRADEPENDS_TARGET"
-	fi
+	[ -z "$makedepends" ] && makedepends="$makedepends_build $makedepends_host"
+	want_check && makedepends="$makedepends $checkdepends"
+	for i in $EXTRADEPENDS_BUILD $EXTRADEPENDS_HOST $1 $depends $makedepends; do
+		[ "$pkgname" = "${i%%[<>=]*}" ] && continue
+		list_has $i $builddeps && continue
+		subpackages_has ${i%%[<>=]*} || builddeps="$builddeps $i"
+	done
+	hostdeps="$EXTRADEPENDS_TARGET"
 }
 
 get_missing_deps() {
@@ -2034,11 +2012,6 @@ builddeps() {
 	fi
 
 	[ -z "$recursive" ] && return 1
-
-	if [ -n "$CBUILDROOT" ]; then
-		error "Recursive rebuilding (-R) is not supported when cross compiling."
-		return 1
-	fi
 
 	# find dependencies that are installed but missing in repo.
 	for i in $builddeps; do
@@ -2122,7 +2095,6 @@ rootbld() {
 		return
 	fi
 
-	[ "$CBUILD" = "$CHOST" ] || die "rootbld: cross-building not supported currently"
 	apk info -eq abuild-rootbld || die "rootbld: abuild-rootbld package not installed"
 
 	logcmd "chroot building building $repo/$pkgname-$pkgver-r$pkgrel"
@@ -2469,10 +2441,6 @@ usage() {
 		  up2date     Compare target and sources dates
 		  verify      Verify checksums
 
-		To activate cross compilation specify in environment:
-		  CHOST       Arch or hostspec of machine to generate packages for
-		  CTARGET     Arch or hostspec of machine to generate compiler for
-
 	EOF
 	exit 0
 }
@@ -2576,7 +2544,7 @@ controldir="$pkgbasedir"/.control.${subpkgname:-$pkgname}
 
 trap 'die "Aborted by user"' INT
 
-[ -z "$subpkgdir" ] && set_xterm_title "abuild${CROSS_COMPILE+-$CARCH}: $pkgname"
+[ -z "$subpkgdir" ] && set_xterm_title "abuild: $pkgname"
 
 if [ -z "$1" ]; then
 	set all
