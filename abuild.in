@@ -1418,6 +1418,15 @@ human_size() {
 		printf("%.1f %s\n", y, type[i+2]) }'
 }
 
+upload_apk() {
+	local name="${1}" ver="${2}" file="${3}" size="${4}" subpkgarch="${5}" hsize= pkgname="${1}"
+
+	hsize=$(echo ${size} | human_size)
+	msg "Uploading ${name}-${ver}, ${file} (${hsize})"
+
+	return 0
+}
+
 create_apks() {
 	local file= dir= name= ver= apk= datadir= size=
 	local gzip=$(command -v pigz || echo gzip)
@@ -1473,6 +1482,8 @@ create_apks() {
 		msg "Create $apk"
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
+
+		[ -z "${S3}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${apk} "${size}" "${subpkgarch}"
 		)
 	done
 }
