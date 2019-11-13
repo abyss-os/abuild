@@ -1477,13 +1477,14 @@ create_apks() {
 		cd "$dir"
 		tar -f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| $gzip -9 > control.tar.gz
-		abuild-sign -q control.tar.gz || exit 1
+
+		[ -z "${S3}" ] && (abuild-sign -q control.tar.gz || exit 1)
 
 		msg "Create $apk"
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${S3}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${apk} "${size}" "${subpkgarch}"
+		[ -z "${S3}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}"
 		)
 	done
 }
