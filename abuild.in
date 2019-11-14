@@ -200,7 +200,6 @@ default_sanitycheck() {
 			fi
 			case "$i" in
 				*::*) i=${i%%::*};;
-				https://*) makedepends_has wget && warning "wget no longer need to be in makedepends when source has https://" ;;
 			esac
 			list_has ${i##*/} $md5sums $sha256sums $sha512sums \
 				|| die "${i##*/} is missing in checksums"
@@ -327,7 +326,7 @@ sourcecheck() {
 			uri=${uri##*::}
 			;;
 		esac
-		wget --spider -q "$uri" || return 1
+		curl -Lo /dev/null -s -r 0-0 --fail "$uri" || return 1
 	done
 	return 0
 }
