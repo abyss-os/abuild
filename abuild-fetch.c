@@ -69,14 +69,14 @@ int fork_exec(char *argv[], int showerr)
 		_exit(201);
 	}
 
-	/* wait for curl/wget and get the exit code */
+	/* wait for curl and get the exit code */
 	wait(&status);
 	if (WIFEXITED(status))
 		r = WEXITSTATUS(status);
 	return r;
 }
 
-/* create or wait for an NFS-safe lockfile and fetch url with curl or wget */
+/* create or wait for an NFS-safe lockfile and fetch url with curl */
 int fetch(char *url, const char *destdir)
 {
 	int lockfd, status=0;
@@ -91,10 +91,6 @@ int fetch(char *url, const char *destdir)
 	struct cmdarray curlcmd = {
 		.argc = 5,
 		.argv = { "curl", "-L", "-f", "-o", partfile, NULL }
-	};
-	struct cmdarray wgetcmd = {
-		.argc = 3,
-		.argv = { "wget", "-O", partfile, NULL }
 	};
 
 	name = strrchr(url, '/');
@@ -137,11 +133,9 @@ int fetch(char *url, const char *destdir)
 		printf("Partial download found. Trying to resume.\n");
 		add_opt(&curlcmd, "-C");
 		add_opt(&curlcmd, "-");
-		add_opt(&wgetcmd, "-c");
 	}
 
 	add_opt(&curlcmd, url);
-	add_opt(&wgetcmd, url);
 
 	status = fork_exec(curlcmd.argv, 0);
 
@@ -149,10 +143,6 @@ int fetch(char *url, const char *destdir)
 	   The server does not support or accept range requests. */
 	if (status == 33)
 		unlink(partfile);
-
-	/* is we failed execute curl, then fallback to wget */
-	if (status == 201)
-		status = fork_exec(wgetcmd.argv, 1);
 
 	/* only rename completed downloads */
 	if (status == 0)
@@ -180,11 +170,11 @@ void sighandler(int sig)
 	}
 }
 
-/* exit codes get passed through from curl/wget (so we can check in abuild
+/* exit codes get passed through from curl (so we can check in abuild
    whether the server does not support resuming). Additional exit codes:
    200: fork failed
-   201: curl/wget could not be started
-   202: curl/wget did not terminate normally
+   201: curl could not be started
+   202: curl did not terminate normally
    203: usage displayed */
 int main(int argc, char *argv[])
 {
