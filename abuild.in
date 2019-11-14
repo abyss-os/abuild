@@ -31,6 +31,9 @@ apk_opt_wait="--wait 30"
 
 umask 022
 
+abyssmirror="https://mirror.getabyss.com"
+distfilesm="${abyssmirror}/sources"
+
 # run optional log command for remote logging
 logcmd() {
 	${ABUILD_LOG_CMD:-true} "$@"
