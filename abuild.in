@@ -1464,9 +1464,7 @@ create_apks() {
 
 		msg "Create checksum..."
 		# append the hash for data.tar.gz
-		local sha256=$(sha256sum "$dir"/data.tar.gz | cut -f1 -d' ')
 		local b2=$(b2sum "$dir"/data.tar.gz | cut -f1 -d' ')
-		echo "datahash = $sha256" >> "$dir"/.PKGINFO
 		echo "b2sum = $b2" >> "$dir"/.PKGINFO
 
 		# control.tar.gz
@@ -2063,11 +2061,11 @@ checksum() {
 	local s files
 	[ -z "$source" ] && [ -n "${sha256sums}${sha512sums}${b2sums}" ] \
 		&& msg "Removing checksums from APKBUILD"
-	sed -E -i -e '/^(b2|sha[0-9]+)sums=".*[^"]$/,/"$/d' \
-		-e '/^(b2|sha[0-9]+)sums=".*"$/d' \
+	sed -E -i -e '/^(md5|b2|sha[0-9]+)sums=".*[^"]$/,/"$/d' \
+		-e '/^(md5|b2|sha[0-9]+)sums=".*"$/d' \
 		\
-		-e "/^(b2|sha[0-9]+)sums='.*[^']\$/,/'\$/d" \
-		-e "/^(b2|sha[0-9]+)sums='.*'\$/d" \
+		-e "/^(md5|b2|sha[0-9]+)sums='.*[^']\$/,/'\$/d" \
+		-e "/^(md5|b2|sha[0-9]+)sums='.*'\$/d" \
 		APKBUILD
 
 	[ -z "$source" ] && return 0
@@ -2075,12 +2073,6 @@ checksum() {
 	for s in $source; do
 		files="$files $(filename_from_uri $s)"
 	done
-
-	msg "Updating the sha512sums in APKBUILD..."
-	sha256sums=
-	sha512sums="$(cd "$srcdir" && sha512sum $files)" \
-		|| die "sha512sum failed"
-	echo "sha512sums=\"$sha512sums\"" >>"$APKBUILD"
 
 	msg "Updating the b2sums in APKBUILD..."
 	b2sums="$(cd "$srcdir" && b2sum $files)" \
