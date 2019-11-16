@@ -201,7 +201,7 @@ default_sanitycheck() {
 			case "$i" in
 				*::*) i=${i%%::*};;
 			esac
-			list_has ${i##*/} $sha256sums $sha512sums \
+			list_has ${i##*/} $sha256sums $sha512sums $b2sums \
 				|| die "${i##*/} is missing in checksums"
 
 			# verify that our source does not have git tag version
@@ -218,7 +218,7 @@ default_sanitycheck() {
 
 	# verify that things listed in checksum also is listed in source
 	local algo=
-	for algo in md5 sha256 sha512; do
+	for algo in sha256 sha512 b2; do
 		eval set -- \$${algo}sums
 		while [ $# -gt 1 ]; do
 			local file="$2"
@@ -294,7 +294,7 @@ sumcheck() {
 # verify checksums
 verify() {
 	local verified=false algo=
-	for algo in sha512 sha256 sha1 md5; do
+	for algo in b2 sha512 sha256 sha1; do
 		local sums=
 		eval sums=\"\$${algo}sums\"
 		if [ -z "$sums" ] || [ -z "$source" ]; then
@@ -1465,7 +1465,9 @@ create_apks() {
 		msg "Create checksum..."
 		# append the hash for data.tar.gz
 		local sha256=$(sha256sum "$dir"/data.tar.gz | cut -f1 -d' ')
+		local b2=$(b2sum "$dir"/data.tar.gz | cut -f1 -d' ')
 		echo "datahash = $sha256" >> "$dir"/.PKGINFO
+		echo "b2sum = $b2" >> "$dir"/.PKGINFO
 
 		# control.tar.gz
 		cd "$dir"
@@ -2059,13 +2061,13 @@ builddeps() {
 # replace the md5sums in the APKBUILD
 checksum() {
 	local s files
-	[ -z "$source" ] && [ -n "${sha256sums}${sha512sums}" ] \
+	[ -z "$source" ] && [ -n "${sha256sums}${sha512sums}${b2sums}" ] \
 		&& msg "Removing checksums from APKBUILD"
-	sed -E -i -e '/^(sha[0-9]+)sums=".*[^"]$/,/"$/d' \
-		-e '/^(sha[0-9]+)sums=".*"$/d' \
+	sed -E -i -e '/^(b2|sha[0-9]+)sums=".*[^"]$/,/"$/d' \
+		-e '/^(b2|sha[0-9]+)sums=".*"$/d' \
 		\
-		-e "/^(sha[0-9]+)sums='.*[^']\$/,/'\$/d" \
-		-e "/^(sha[0-9]+)sums='.*'\$/d" \
+		-e "/^(b2|sha[0-9]+)sums='.*[^']\$/,/'\$/d" \
+		-e "/^(b2|sha[0-9]+)sums='.*'\$/d" \
 		APKBUILD
 
 	[ -z "$source" ] && return 0
@@ -2079,6 +2081,11 @@ checksum() {
 	sha512sums="$(cd "$srcdir" && sha512sum $files)" \
 		|| die "sha512sum failed"
 	echo "sha512sums=\"$sha512sums\"" >>"$APKBUILD"
+
+	msg "Updating the b2sums in APKBUILD..."
+	b2sums="$(cd "$srcdir" && b2sum $files)" \
+		|| die "b2sum failed"
+	echo "b2sums=\"$b2sums\"" >>"$APKBUILD"
 }
 
 rootbld_actions() {
