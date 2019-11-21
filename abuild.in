@@ -421,8 +421,6 @@ default_unpack() {
 	verify || return 1
 	initdcheck || return 1
 	mkdir -p "$srcdir"
-	local gunzip=$(command -v pigz || echo gunzip)
-	[ $gunzip = "/usr/bin/pigz" ] && gunzip="$gunzip -d"
 	for u in $source; do
 		local s
 		if is_remote "$u"; then
@@ -1423,7 +1421,6 @@ upload_apk() {
 
 create_apks() {
 	local file= dir= name= ver= apk= datadir= size=
-	local gzip=$(command -v pigz || echo gzip)
 	getpkgver || return 1
 	if ! options_has "!tracedeps"; then
 		for file in "$pkgbasedir"/.control.*/.PKGINFO; do
@@ -1460,7 +1457,7 @@ create_apks() {
 			touch .dummy
 			set -- .dummy
 		fi
-		tar --xattrs -f - -c "$@" | abuild-tar --hash | $gzip -9 >"$dir"/data.tar.gz
+		tar --xattrs -f - -c "$@" | abuild-tar --hash | pigz -9 >"$dir"/data.tar.gz
 
 		msg "Create checksum..."
 		# append the hash for data.tar.gz
@@ -1470,7 +1467,7 @@ create_apks() {
 		# control.tar.gz
 		cd "$dir"
 		tar -f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
-			| $gzip -9 > control.tar.gz
+			| pigz -9 > control.tar.gz
 
 		[ -z "${S3}" ] && (abuild-sign -q control.tar.gz || exit 1)
 
@@ -1560,7 +1557,6 @@ check() {
 
 # predefined splitfunc doc
 default_doc() {
-	local gzip=$(command -v pigz || echo gzip)
 	depends="$depends_doc"
 	pkgdesc="$pkgdesc (documentation)"
 	install_if="docs $pkgname=$pkgver-r$pkgrel"
@@ -1603,7 +1599,7 @@ default_doc() {
 			fi
 		done
 
-		[ $islink -eq 0 ] && $gzip -9 "$name"
+		[ $islink -eq 0 ] && pigz -9 "$name"
 	done
 
 	rm -f "$subpkgdir/usr/share/info/dir"
