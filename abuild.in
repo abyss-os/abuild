@@ -1461,7 +1461,7 @@ create_apks() {
 
 		msg "Create checksum..."
 		# append the hash for data.tar.gz
-		local b2=$(openssl dgst -blake2b512 "$dir"/data.tar.gz | cut -f1 -d' ')
+		local b2=$(openssl dgst -r -blake2b512 "$dir"/data.tar.gz | cut -f1 -d' ')
 		echo "b2sum = $b2" >> "$dir"/.PKGINFO
 
 		# control.tar.gz
@@ -2071,7 +2071,7 @@ checksum() {
 	done
 
 	msg "Updating the b2sums in APKBUILD..."
-	b2sums="$(cd "$srcdir" && openssl dgst -blake2b512 $files)" \
+	b2sums="$(cd "$srcdir" && openssl dgst -r -blake2b512 $files)" \
 		|| die "b2sums failed"
 	echo "b2sums=\"$b2sums\"" >>"$APKBUILD"
 }
