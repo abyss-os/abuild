@@ -1,5 +1,4 @@
 #!/bin/ash -e
-
 # abuild - build apk packages (light version of makepkg)
 # Copyright (c) 2008-2015 Natanael Copa <ncopa@alpinelinux.org>
 # Copyright (c) 2016 Timo Teräs <timo.teras@iki.fi>
@@ -255,55 +254,54 @@ sanitycheck() {
 	default_sanitycheck
 }
 
+# takes hash file as args
 sumcheck() {
-	local algo="$1" sums="$2"
-	local dummy f endreturnval originalparams origin file
+#	echo "sumcheck($1, $2)"
+	local hash="$1"
+	local file="$2"
 
-	# get number of checksums
-	set -- $sums
-	local numsums=$(( $# / 2 ))
+	local ahash="$(openssl dgst -blake2b512 -r ${file} | cut -f1 -d ' ')"
 
-	set -- $source
-	if [ $# -ne $numsums ]; then
-		die "Number of ${algo}sums($numsums) does not correspond to number of sources($#)"
+	if [ "${ahash}" = "${hash}" ]; then
+		msg "$file: OK"
+		return 0
+	else
+		msg "$file: fail"
+		return 1
 	fi
-	fetch || return 1
-	msg "Checking ${algo}sums..."
-	cd "$srcdir" || return 1
-	IFS=$'\n'
-	endreturnval=0
-	for src in $sums; do
-		origin=$1; shift
-		if ! echo "$src" | ${algo}sum -c; then
-			endreturnval=1
-			is_remote $origin || continue
-
-			local csum="${src:0:8}"
-			local file="$SRCDEST/$(filename_from_uri $origin)"
-
-			echo "Because the remote file above failed the ${algo}sum check it will be renamed."
-			echo "Rebuilding will cause it to re-download which in some cases may fix the problem."
-			echo "Renaming: ${file##*/} to ${file##*/}.$csum"
-			mv "$file" "$file.$csum"
-		fi
-	done
-	unset IFS
-	return $endreturnval
 }
 
 # verify checksums
 verify() {
-	local verified=false algo=
-	for algo in b2 sha512 sha256 sha1; do
-		local sums=
-		eval sums=\"\$${algo}sums\"
-		if [ -z "$sums" ] || [ -z "$source" ]; then
-			continue
+	local verified=false
+
+	if [ -z "$b2sums" ] || [ -z "$source" ]; then
+		die "b2sums or sources missing"
+	fi
+
+	# get number of checksums
+	set -- $b2sums
+	local numsums=$(( $# / 2 ))
+	set -- $source
+	if [ $# -ne $numsums ]; then
+		die "Number of b2sums($numsums) does not correspond to number of sources($#)"
+	fi
+
+	fetch || return 1
+
+	msg "Checking b2sums..."
+	cd "$srcdir" || return 1
+	IFS=$'\n'
+	for sum in $b2sums; do
+		unset IFS
+		set -- $sum
+		verified=$(sumcheck "$1" "$2")
+		if ! $verified; then
+			die "$file checksum mismatch"
 		fi
-		sumcheck "$algo" "$sums" || return 1
-		verified=true
-		break
+		IFS=$'\n'
 	done
+	unset IFS
 	if [ -n "$source" ] && ! $verified; then
 		die "Use 'abuild checksum' to generate/update the checksum(s)"
 	fi
