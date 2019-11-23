@@ -1731,7 +1731,7 @@ do_fakeroot() {
 check_fakeroot() {
 	cd "$startdir"
 	[ -n "$FAKEROOT" ] && msg "Entering fakeroot..."
-	do_fakeroot "$abuild_path" $forceroot $color_opt $keep_build check
+	do_fakeroot "$abuild_path" $skipcheck $forceroot $color_opt $keep_build check
 }
 
 # build and package in fakeroot
@@ -2039,7 +2039,7 @@ builddeps() {
 		export ABUILD_VISITED="$ABUILD_VISITED $pkg"
 
 		msg "Entering $dir"
-		cd "$dir" && "$abuild_path" $forceroot $keep $keep_build $quiet \
+		cd "$dir" && "$abuild_path" $skipcheck $forceroot $keep $keep_build $quiet \
 			$install_deps $recursive $upgrade $color_opt \
 			abuildindex || return 1
 	done
