@@ -1415,7 +1415,7 @@ upload_apk() {
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}, ${file} (${hsize})"
 
-	mcli cp ${file} abyss-incoming/${pkgname}-${pkgver}.apk
+	mcli cp ${file} master/abyss-ci/${pkgname}-${pkgver}.apk
 
 	return 0
 }
