@@ -1415,6 +1415,8 @@ upload_apk() {
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}, ${file} (${hsize})"
 
+	mcli cp ${file} abyss-incoming/${pkgname}-${pkgver}.apk
+
 	return 0
 }
 
@@ -1468,13 +1470,13 @@ create_apks() {
 		tar -f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| pigz -9 > control.tar.gz
 
-		[ -z "${S3}" ] && (abuild-sign -q control.tar.gz || exit 1)
+		[ -z "${MC_HOST_master}" ] && (abuild-sign -q control.tar.gz || exit 1)
 
 		msg "Create $apk"
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${S3}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}"
+		[ -z "${MC_HOST_master}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}"
 		)
 	done
 }
