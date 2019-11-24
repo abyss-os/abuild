@@ -1410,12 +1410,12 @@ human_size() {
 }
 
 upload_apk() {
-	local name="${1}" ver="${2}" file="${3}" size="${4}" subpkgarch="${5}" apk="${6}" hsize= pkgname="${1}"
+	local name="${1}" ver="${2}" file="${3}" size="${4}" subpkgarch="${5}" apk="${6}" repo="${7}" arch="${8}" hsize= pkgname="${1}"
 
 	hsize=$(echo ${size} | human_size)
-	msg "Uploading ${name}-${ver}, ${file} (${hsize})"
+	msg "Uploading ${name}-${ver}"
 
-	mcli cp ${file} master/abyss-ci/${apk}
+	mcli cp ${file} master/abyss-ci/${repo}/${arch}/${apk}
 
 	return 0
 }
@@ -1476,7 +1476,7 @@ create_apks() {
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${MC_HOST_master}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}"
+		[ -z "${MC_HOST_master}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}"
 		)
 	done
 }
