@@ -536,7 +536,7 @@ mkusers() {
 
 # helper to update config.sub to a recent version
 update_config_sub() {
-	find . -name config.sub | (local changed=false; while read f; do
+	find . -name config.sub -type f | (local changed=false; while read f; do
 		msg "Updating $f"
 		cp "$datadir"/${f##*/} "$f" || return 1
 		changed=true
@@ -545,7 +545,7 @@ update_config_sub() {
 
 # helper to update config.guess to a recent version
 update_config_guess() {
-	find . -name config.guess | (local changed=false; while read f; do
+	find . -name config.guess -type f | (local changed=false; while read f; do
 		if grep -q aarch64 "$f" && grep -q ppc64le "$f"; then
 			msg "No update needed for $f"
 		else
@@ -554,6 +554,11 @@ update_config_guess() {
 			changed=true
 		fi
 	done; $changed)
+}
+
+config_helper() {
+	update_config_sub
+	update_config_guess
 }
 
 runpart() {
