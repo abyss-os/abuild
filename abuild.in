@@ -601,6 +601,7 @@ default_prepare() {
 		return 0
 	fi
 	[ -d "$builddir" ] || { error "Is \$builddir set correctly?"; return 1; }
+	config_helper
 	for i in $source; do
 		case ${i%::*} in
 			*.patch)
