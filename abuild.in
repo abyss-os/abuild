@@ -1420,9 +1420,18 @@ upload_apk() {
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}"
 
-	mcli cp ${file} master/abyss-ci/${repo}/${arch}/${apk}
-
-	return 0
+	if [ -z "${MC_HOST_master}" ]; then
+		warn "upload: no target"
+	else
+		mcli cp --attr \
+			repo="${DRONE_REPO_NAME}"\;\
+			owner="${DRONE_REPO_OWNER}"\;\
+			author="${DRONE_COMMIT_AUTHOR}"\;\
+			stage="${DRONE_STAGE_NAME}"\;\
+			arch="${DRONE_STAGE_ARCH}"\;\
+			ts="${DRONE_BUILD_STARTED}"\;\
+			commit="${DRONE_COMMIT}"\ ${file} master/abyss-ci/${apk}
+	fi
 }
 
 create_apks() {
@@ -1475,13 +1484,13 @@ create_apks() {
 		tar -f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| pigz -9 > control.tar.gz
 
-		[ -z "${MC_HOST_master}" ] && (abuild-sign -q control.tar.gz || exit 1)
+		[ -z "${DRONE}" ] && (abuild-sign -q control.tar.gz || exit 1)
 
 		msg "Create $apk"
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${MC_HOST_master}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}"
+		[ -z "${DRONE}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}"
 		)
 	done
 }
