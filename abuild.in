@@ -536,20 +536,18 @@ mkusers() {
 
 # helper to update config.sub to a recent version
 update_config_sub() {
-	find . -name config.sub -type f | (local changed=false; while read f; do
+	find . -name config.sub -type f | (while read f; do
 		msg "Updating $f"
 		cp "$datadir"/${f##*/} "$f" || return 1
-		changed=true
-	done; $changed)
+	done)
 }
 
 # helper to update config.guess to a recent version
 update_config_guess() {
-	find . -name config.guess -type f | (local changed=false; while read f; do
+	find . -name config.guess -type f | (while read f; do
 		msg "Updating $f"
 		cp "$datadir"/${f##*/} "$f" || return 1
-		changed=true
-	done; $changed)
+	done)
 }
 
 config_helper() {
