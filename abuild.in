@@ -1560,7 +1560,7 @@ check() {
 default_doc() {
 	depends="$depends_doc"
 	pkgdesc="$pkgdesc (documentation)"
-	install_if="docs $pkgname=$pkgver-r$pkgrel"
+	install_if="mandoc $pkgname=$pkgver-r$pkgrel"
 
 	local i
 	for i in doc man info html sgml licenses gtk-doc ri help; do
@@ -1611,35 +1611,6 @@ default_doc() {
 
 doc() {
 	default_doc
-}
-
-# predefined splitfunc dbg
-default_dbg() {
-	local f
-	pkgdesc="$pkgdesc (debug symbols)"
-
-	scanelf -R "$pkgdir" | grep ET_DYN | sed "s:$pkgdir\/::g" | sed "s:ET_DYN ::g" | while read f; do
-		local ddbg_srcdir=$(dirname "$pkgdir/$f")
-		local ddbg_srcfile=$(basename "$pkgdir/$f")
-		local ddbg_dstdir=$(dirname "$subpkgdir/usr/lib/debug/$f.debug")
-		local ddbg_dstfile=$(basename "$subpkgdir/usr/lib/debug/$f.debug")
-		mkdir -p "$ddbg_dstdir"
-
-		cd "$ddbg_srcdir"
-		local xattr=$(getfattr --match="" --dump "${ddbg_srcfile}")
-		objcopy --only-keep-debug "$ddbg_srcfile" "$ddbg_dstfile"
-		objcopy --add-gnu-debuglink="$ddbg_dstfile" "$ddbg_srcdir/$ddbg_srcfile"
-		mv "$ddbg_dstfile" "$ddbg_dstdir"
-		strip "$ddbg_srcfile"
-		if [ -n "$xattr" ]; then
-			echo "$xattr" | setfattr --restore=-
-		fi
-	done
-	return 0
-}
-
-dbg() {
-	default_dbg
 }
 
 # predefined splitfunc dev
@@ -2509,18 +2480,6 @@ fi
 
 # for recursive action
 export REPODEST SRCDEST
-
-# add dbg subpackage if its enabled globally
-if [ -n "$DEFAULT_DBG" ] && ! subpackage_types_has "dbg" && ! options_has "!dbg" && [ "$arch" != "noarch" ]; then
-        subpackages="$pkgname-dbg $subpackages"
-fi
-
-# if we want build debug package
-if [ -n "$DEBUG" ] || subpackage_types_has "dbg"; then
-	CFLAGS="$CFLAGS -g"
-	CXXFLAGS="$CXXFLAGS -g"
-	options="$options !strip"
-fi
 
 if [ -n "$subpkgname" ]; then
 	# If we are handling a sub package then reset subpackages and install
