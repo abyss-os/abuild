@@ -624,6 +624,20 @@ targz() {
 postcheck() {
 	local dir="$1" name="$2" i=
 	msg "Running postcheck for $name"
+
+	# check for packages still installing things into the wrong place
+	for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
+		if [ -e "$i" ]; then
+			error "Packages must use /usr as their prefix"
+			return 1
+		fi
+	done
+	# check for multlib
+	if [ -d "$dir"/usr/lib64 -o -d "$dir"/lib64 ]; then
+		error "No multilib, no lib64"
+		return 1
+	fi
+
 	# checking for FHS compat
 	if ! options_has "!fhs"; then
 		for i in "$dir"/srv/* "$dir"/usr/local/* "$dir"/opt/*; do
