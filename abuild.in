@@ -227,14 +227,6 @@ default_sanitycheck() {
 		done
 	done
 
-	# common spelling errors
-	[ -n "$depend" ] && spell_error depend depends
-	[ -n "$makedepend" ] && spell_error makedepend makedepends
-	[ -n "$pkguser" ] && spell_error pkguser pkgusers
-	[ -n "$pkggroup" ] && spell_error pkggroup pkggroups
-	[ -n "$subpackage" ] && spell_error subpackage subpackages
-	[ -n "$checkdepend" ] && spell_error checkdepend checkdepends
-
 	check_maintainer || die "Provide a valid RFC822 maintainer address"
 	check_license || warning "Please use valid SPDX license identifiers found at: https://spdx.org/licenses"
 
