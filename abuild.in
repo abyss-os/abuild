@@ -618,12 +618,16 @@ postcheck() {
 	msg "Running postcheck for $name"
 
 	# check for packages still installing things into the wrong place
-	for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
-		if [ -e "$i" ]; then
-			error "Packages must use /usr as their prefix"
-			return 1
-		fi
-	done
+	# exclude filesystem from check as it creates links
+	if [ "$pkgname" != "filesystem" ]; then
+		for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
+			if [ -e "$i" ]; then
+				error "Packages must use /usr as the prefix"
+				return 1
+			fi
+		done
+	fi
+
 	# check for multlib
 	if [ -d "$dir"/usr/lib64 -o -d "$dir"/lib64 ]; then
 		error "No multilib, no lib64"
