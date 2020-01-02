@@ -5,12 +5,12 @@ program=${0##*/}
 
 arch_to_hostspec() {
 	case "$1" in
-	aarch64)	echo "aarch64-pc-linux-musl" ;;
-	mips64)         echo "mips64-pc-linux-musl" ;;
-	mips64el)       echo "mips64el-pc-linux-musl" ;;
-	ppc64le)	echo "powerpc64le-pc-linux-musl" ;;
-	riscv64)	echo "riscv64-pc-linux-musl" ;;
-	x86_64)		echo "x86_64-pc-linux-musl" ;;
+	aarch64)	echo "aarch64-abyss-linux-musl" ;;
+	mips64)         echo "mips64-abyss-linux-musl" ;;
+	mips64el)       echo "mips64el-abyss-linux-musl" ;;
+	ppc64le)	echo "powerpc64le-abyss-linux-musl" ;;
+	riscv64)	echo "riscv64-abyss-linux-musl" ;;
+	x86_64)		echo "x86_64-abyss-linux-musl" ;;
 	*)		echo "unknown" ;;
 	esac
 }
