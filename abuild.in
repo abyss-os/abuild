@@ -1420,7 +1420,7 @@ human_size() {
 }
 
 upload_apk() {
-	local name="${1}" ver="${2}" file="${3}" size="${4}" subpkgarch="${5}" apk="${6}" repo="${7}" arch="${8}" hsize= pkgname="${1}"
+	local name="${1}" ver="${2}" file="${3}" size="${4}" subpkgarch="${5}" apk="${6}" repo="${7}" arch="${8}" origin="${9}" hsize= pkgname="${1}"
 
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}"
@@ -1428,7 +1428,7 @@ upload_apk() {
 	if [ -z "${MC_HOST_master}" ]; then
 		warning "upload: no target"
 	else
-		mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}" ${file} master/abyss/${repo}/${arch}/${pkgname}-${pkgver}.apk
+		mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}"\;origin="${origin}" ${file} master/abyss/${repo}/${arch}/${pkgname}-${pkgver}.apk
 	fi
 }
 
@@ -1488,7 +1488,7 @@ create_apks() {
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${DRONE}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}"
+		[ -z "${DRONE}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}" "${origin}"
 		)
 	done
 }
