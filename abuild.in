@@ -1454,6 +1454,7 @@ create_apks() {
 		local name=$(pkginfo_val pkgname $file)
 		local ver=$(pkginfo_val pkgver $file)
 		local size=$(pkginfo_val size $file | human_size)
+		local origin=$(pkginfo_val origin $file)
 		local apk=$name-$ver.apk
 		local datadir="$pkgbasedir"/$name
 		local subpkgname=$name
