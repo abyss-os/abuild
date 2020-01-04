@@ -1428,7 +1428,7 @@ upload_apk() {
 	if [ -z "${MC_HOST_master}" ]; then
 		warning "upload: no target"
 	else
-		mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}"\;origin="${origin}" ${file} master/abyss/${repo}/${arch}/${pkgname}-${pkgver}.apk
+		mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}"\;origin="${origin}" ${file} master/abyss/${repo}/${arch}/${apk}
 	fi
 }
 
