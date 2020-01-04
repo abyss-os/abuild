@@ -1483,7 +1483,7 @@ create_apks() {
 		tar -f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| pigz -9 > control.tar.gz
 
-		[ -z "${DRONE}" ] && (abuild-sign -q control.tar.gz || exit 1)
+		abuild-sign -q control.tar.gz || exit 1
 
 		msg "Create $apk"
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
