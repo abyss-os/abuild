@@ -622,7 +622,7 @@ postcheck() {
 	if [ "$pkgname" != "filesystem" ]; then
 		for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
 			if [ -e "$i" ]; then
-				error "Packages must use /usr as the prefix"
+				error "Packages must use /usr as the prefix: ${i}"
 				return 1
 			fi
 		done
