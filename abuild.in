@@ -1,10 +1,11 @@
-#!/bin/ash -e
+#!/usr/bin/busybox ash
 # abuild - build apk packages (different version of makepkg)
 # Copyright (c) 2008-2015 Natanael Copa <ncopa@alpinelinux.org>
 # Copyright (c) 2016 Timo Teräs <timo.teras@iki.fi>
 #
 # Distributed under GPL-2
 #
+set -e
 
 program_version=@VERSION@
 sysconfdir=@sysconfdir@
@@ -21,7 +22,6 @@ fi
 
 # defaults
 : ${FAKEROOT:="fakeroot"}
-: ${SUDO_APK:="abuild-apk"}
 : ${APK:="apk"}
 : ${ADDUSER:="abuild-adduser"}
 : ${ADDGROUP:="abuild-addgroup"}
@@ -62,6 +62,12 @@ error() {
 	printf "${prompt} ${name}${fake}: %s\n" "$1" >&2
 	logcmd "ERROR: $pkgname: $1"
 }
+
+# just bail if uid >0 for now, since it doesn't work as a normal user anyway
+if [ ${UID} -gt 0]; then
+	error "abuild requires being run as root"
+	exit 1
+fi
 
 want_check() {
 	[ "$skipcheck" ] && return 1
@@ -2029,7 +2035,7 @@ builddeps() {
 			$install_deps $recursive $upgrade $color_opt \
 			abuildindex || return 1
 	done
-	$SUDO_APK add --upgrade --repository "$REPODEST/$repo" \
+	$APK add --upgrade --repository "$REPODEST/$repo" \
 		$apk_opt_wait \
 		--virtual .makedepends-$pkgname $builddeps \
 		|| return 1
@@ -2135,10 +2141,10 @@ rootbld() {
 	) < "$repo_template" > "$BUILD_ROOT/etc/apk/repositories"
 
 	calcdeps
-	$SUDO_APK add --initdb --root "$BUILD_ROOT" --update \
+	$APK add --initdb --root "$BUILD_ROOT" --update \
 		abuild filesystem
 
-	$SUDO_APK add --root "$BUILD_ROOT" --update \
+	$APK add --root "$BUILD_ROOT" --update \
 		abuild musl git $hostdeps $builddeps
 
 	local bwrap_opts=""
@@ -2275,22 +2281,22 @@ deps() {
 
 	local _quiet="$1"
 	[ -z "$_quiet" ] && msg "Installing for build:$builddeps"
-	$SUDO_APK add $_quiet $apk_opt_wait --repository "$REPODEST/$repo" \
+	$APK add $_quiet $apk_opt_wait --repository "$REPODEST/$repo" \
 		--virtual .makedepends-$pkgname \
 		$builddeps \
 		|| return 1
 	if [ -n "$CBUILDROOT" ]; then
 		[ -z "$_quiet" ] && msg "Installing for host:$hostdeps"
-		$SUDO_APK add $_quiet --root "$CBUILDROOT" --arch "$CTARGET_ARCH" --repository "$REPODEST/$repo" $apk_opt_wait \
+		$APK add $_quiet --root "$CBUILDROOT" --arch "$CTARGET_ARCH" --repository "$REPODEST/$repo" $apk_opt_wait \
 			--no-scripts --virtual .makedepends-$pkgname $hostdeps || return 1
 	fi
 }
 
 undeps() {
 	local _quiet="$@"
-	$SUDO_APK del $_quiet $apk_opt_wait .makedepends-$pkgname || :
+	$APK del $_quiet $apk_opt_wait .makedepends-$pkgname || :
 	if [ -n "$CBUILDROOT" ]; then
-		$SUDO_APK del $_quiet --root "$CBUILDROOT" --arch "$CTARGET_ARCH" $apk_opt_wait \
+		$APK del $_quiet --root "$CBUILDROOT" --arch "$CTARGET_ARCH" $apk_opt_wait \
 			--no-scripts .makedepends-$pkgname || :
 	fi
 }
