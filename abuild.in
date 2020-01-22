@@ -64,7 +64,7 @@ error() {
 }
 
 # just bail if uid >0 for now, since it doesn't work as a normal user anyway
-if [ ${UID} -gt 0 ]; then
+if [ "$(id -u)" -gt 0 ]; then
 	error "abuild requires being run as root"
 	exit 1
 fi
