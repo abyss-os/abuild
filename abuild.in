@@ -274,8 +274,12 @@ sumcheck() {
 verify() {
 	local verified=false
 
-	if [ -z "$b2sums" ] || [ -z "$source" ]; then
-		die "b2sums or sources missing"
+	if [ ! -z "$source" ]; then
+		if [ -z "$b2sums" ]; then
+			die "b2sums missing"
+		else
+			return 0
+		fi
 	fi
 
 	# get number of checksums
