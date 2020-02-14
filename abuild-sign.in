@@ -1,10 +1,10 @@
-#!/bin/sh
-
+#!/usr/bin/busybox ash
 # abuild-sign - sign indexes
 # Copyright (c) 2009 Natanael Copa <ncopa@alpinelinux.org>
 #
 # Distributed under GPL-2
 #
+set -e
 
 program_version=@VERSION@
 datadir=@datadir@
