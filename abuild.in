@@ -23,8 +23,8 @@ fi
 # defaults
 : ${FAKEROOT:="fakeroot"}
 : ${APK:="apk"}
-: ${ADDUSER:="abuild-adduser"}
-: ${ADDGROUP:="abuild-addgroup"}
+: ${ADDUSER:="adduser"}
+: ${ADDGROUP:="addgroup"}
 
 apk_opt_wait="--wait 30"
 
