@@ -629,7 +629,7 @@ postcheck() {
 
 	# check for packages still installing things into the wrong place
 	# exclude filesystem from check as it creates links
-	if [ "$pkgname" != "filesystem" ]; then
+	if [ "$pkgname" != "abyss-base" ]; then
 		for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
 			if [ -e "$i" ]; then
 				error "Packages must use /usr as the prefix: ${i}"
