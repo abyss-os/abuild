@@ -591,13 +591,13 @@ have_patches() {
 }
 
 default_prepare() {
+	config_helper
 	local i
 	[ -n "$builddir" -a -d "$builddir" ] && cd "$builddir"
 	if ! have_patches; then
 		return 0
 	fi
 	[ -d "$builddir" ] || { error "Is \$builddir set correctly?"; return 1; }
-	config_helper
 	for i in $source; do
 		case ${i%::*} in
 			*.patch)
