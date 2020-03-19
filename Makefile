@@ -9,8 +9,7 @@ datadir		?= $(prefix)/share/$(PACKAGE)
 mandir		?= $(prefix)/share/man
 
 SCRIPTS		:= abuild abuild-keygen abuild-sign newapkbuild \
-		   abump apkgrel buildlab apkbuild-cpan checkapk \
-		   apkbuild-gem-resolver
+		   abump apkgrel buildlab checkapk
 USR_BIN_FILES	:= $(SCRIPTS) abuild-tar abuild-gzsplit abuild-sudo abuild-fetch abuild-rmtemp
 MAN_1_PAGES	:= newapkbuild.1
 MAN_5_PAGES	:= APKBUILD.5
