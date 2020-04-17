@@ -2462,7 +2462,7 @@ usage() {
 APKBUILD="${APKBUILD:-./APKBUILD}"
 unset force
 unset recursive
-while getopts "AcdD:CfFhkKimnp:P:qrRs:uv" opt; do
+while getopts "AcdD:CfFhkKimnp:P:qrRs:uvV" opt; do
 	case $opt in
 		'A') echo "$CARCH"; exit 0;;
 		'c') enable_colors
@@ -2486,6 +2486,8 @@ while getopts "AcdD:CfFhkKimnp:P:qrRs:uv" opt; do
 		'u') upgrade="-u"
 		     recursive="-R";;
 		'v') set -x;;
+		'V') echo "$program $program_version"; exit 0;;
+		'?') exit 1;;
 	esac
 done
 shift $(( $OPTIND - 1 ))
