@@ -142,11 +142,7 @@ spell_error() {
 	die "APKBUILD contains '$1'. It should be '$2'"
 }
 
-print_version() {
-	msg "$program $program_version"
-}
-
-# check if apkbuild is basicly sane
+# check if apkbuild is sane
 default_sanitycheck() {
 	local i= j= suggestion=
 	msg "Checking sanity of $APKBUILD..."
