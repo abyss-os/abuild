@@ -822,17 +822,17 @@ prepare_language_packs() {
 
 # echo '-dirty' if git is not clean
 git_dirty() {
-	[ $($git status -s "$startdir" | wc -l) -ne 0 ] && echo "-dirty"
+	[ $($git status -s -- "$startdir" | wc -l) -ne 0 ] && echo "-dirty"
 }
 
 # echo last commit hash id
 git_last_commit() {
-	$git log --format=oneline -n 1 "$startdir" | awk '{print $1}'
+	$git log --format=oneline -n 1 -- "$startdir" | awk '{print $1}'
 }
 
 # date of last commit
 git_last_commit_epoch() {
-	$git log -1 --format=%cd --date=unix -- "$startdir"
+	$git log -1 --format=%cd --date=unix $1 -- "$startdir"
 }
 
 get_maintainer() {
@@ -859,7 +859,7 @@ check_maintainer() {
 check_license() {
 	local ret=0
 	local license_list=/usr/share/spdx/license.lst
-	local exclude="AND OR WITH"
+	local exclude="AND OR WITH ( )"
 	if options_has "!spdx" || ! [ -f "$license_list" ]; then
 		return 0
 	fi
@@ -964,11 +964,11 @@ prepare_metafiles() {
 	local i deps
 	deps="$depends"
 
-	# store last_commit in global var so we only call git once
-	if [ -z "$last_commit" ]; then
-		last_commit="$(git_last_commit)$(git_dirty)"
+	# store ABUILD_LAST_COMMIT in global var so we only call git once
+	if [ -z "$ABUILD_LAST_COMMIT" ]; then
+		ABUILD_LAST_COMMIT="$(git_last_commit)$(git_dirty)"
 	fi
-	echo "commit = $last_commit" >> "$pkginfo"
+	echo "commit = $ABUILD_LAST_COMMIT" >> "$pkginfo"
 
 	get_maintainer
 	if [ -n "$maintainer" ]; then
@@ -1546,6 +1546,17 @@ build_abuildrepo() {
 		logcmd "building $repo/$pkgname-$pkgver-r$pkgrel"
 		local _starttime=$(date --utc +%s)
 		msg "Building $repo/$pkgname $pkgver-r$pkgrel (using $program $program_version) started $(date -R)"
+
+		# set time stamp for reproducible builds
+		export ABUILD_LAST_COMMIT="$(git_last_commit)$(git_dirty)"
+		if [ -z "$SOURCE_DATE_EPOCH" ] && [ "${ABUILD_LAST_COMMIT%-dirty}" = "$ABUILD_LAST_COMMIT" ]; then
+			SOURCE_DATE_EPOCH=$(git_last_commit_epoch $ABUILD_LAST_COMMIT)
+		fi
+		if [ -z "$SOURCE_DATE_EPOCH" ]; then
+			SOURCE_DATE_EPOCH=$(date -u "+%s")
+		fi
+		export SOURCE_DATE_EPOCH
+
 		for part in sanitycheck builddeps clean fetch unpack prepare mkusers build \
 				$_check rootpkg; do
 			runpart $part
@@ -1768,6 +1779,7 @@ rootpkg() {
 	cd "$startdir"
 	rm -rf "$pkgdir"
 	[ -n "$FAKEROOT" ] && msg "Entering fakeroot..."
+
 	do_fakeroot "$abuild_path" $forceroot $color_opt $keep_build \
 		package \
 		prepare_subpackages \
@@ -2522,14 +2534,6 @@ BUILD_ROOT=
 : ${CC:=clang}
 : ${CXX:=clang++}
 export CC CXX
-
-if [ -z "$SOURCE_DATE_EPOCH" ]; then
-	SOURCE_DATE_EPOCH=$(git_last_commit_epoch)
-fi
-if [ -z "$SOURCE_DATE_EPOCH" ]; then
-	SOURCE_DATE_EPOCH=$(date -u "+%s")
-fi
-export SOURCE_DATE_EPOCH
 
 cd "$startdir" || die
 . "$APKBUILD"
