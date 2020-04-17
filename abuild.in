@@ -2626,6 +2626,7 @@ repo=${startdir%/*}
 repo=${repo##*/}
 
 SRCDEST=${SRCDEST:-$startdir}
+CARGO_HOME=$SRCDEST/cargo
 
 BUILD_ROOT=
 
@@ -2646,7 +2647,7 @@ if [ -z "$REPODEST" ]; then
 fi
 
 # for recursive action
-export REPODEST SRCDEST
+export REPODEST SRCDEST CARGO_HOME
 
 if [ -n "$subpkgname" ]; then
 	# If we are handling a sub package then reset subpackages and install
