@@ -8,7 +8,6 @@
 set -e
 
 program_version=@VERSION@
-sysconfdir=@sysconfdir@
 sharedir=@sharedir@
 
 abuild_path=$(readlink -f $0)
@@ -1744,12 +1743,11 @@ default_dev() {
 	cd "$pkgdir" || return 0
 	local libdirs=usr/
 	[ -d lib/ ] && libdirs="lib/ $libdirs"
-	for i in usr/include usr/lib/pkgconfig usr/share/aclocal\
-			usr/share/gettext usr/bin/*-config	\
-			usr/share/vala/vapi usr/share/gir-[0-9]*\
-			usr/share/qt*/mkspecs			\
-			usr/lib/qt*/mkspecs			\
-			usr/lib/cmake				\
+	for i in usr/include usr/lib/pkgconfig usr/share/pkgconfig \
+			usr/share/aclocal usr/share/gettext \
+			usr/bin/*-config usr/share/vala/vapi \
+			usr/share/gir-[0-9]* usr/share/qt*/mkspecs \
+			usr/lib/qt*/mkspecs usr/lib/cmake \
 			$(find . -name include -type d)	\
 			$(find $libdirs -name '*.[cho]' \
 				-o -name '*.prl' 2>/dev/null); do
