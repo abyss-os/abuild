@@ -1,4 +1,3 @@
-
 PACKAGE		:= abuild
 VERSION		:= 4.0.3
 
@@ -121,6 +120,9 @@ install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	cp functions.sh $(DESTDIR)/$(datadir)/
 
 	install -m644 defaults_$(CARCH).conf $(DESTDIR)/$(sysconfdir)/abuild/defaults.conf
+
+depends depend:
+	sudo apk --no-cache add -U openssl-dev zlib-dev
 
 .gitignore: Makefile
 	echo "*.tar.bz2" > $@
