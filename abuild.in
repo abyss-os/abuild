@@ -95,6 +95,20 @@ want_check() {
 	return 0
 }
 
+set_source_date() {
+	# set time stamp for reproducible builds
+	if [ -z "$ABUILD_LAST_COMMIT" ]; then
+		export ABUILD_LAST_COMMIT="$(git_last_commit)$(git_dirty)"
+	fi
+	if [ -z "$SOURCE_DATE_EPOCH" ] && [ "${ABUILD_LAST_COMMIT%-dirty}" = "$ABUILD_LAST_COMMIT" ]; then
+		SOURCE_DATE_EPOCH=$(git_last_commit_epoch $ABUILD_LAST_COMMIT)
+	fi
+	if [ -z "$SOURCE_DATE_EPOCH" ]; then
+		SOURCE_DATE_EPOCH=$(date -u "+%s")
+	fi
+	export SOURCE_DATE_EPOCH
+}
+
 default_cleanup_srcdir() {
 	if options_has "chmod-clean" && test -d "$srcdir"; then
 		chmod -R +w "$srcdir"
@@ -1547,15 +1561,8 @@ build_abuildrepo() {
 		local _starttime=$(date --utc +%s)
 		msg "Building $repo/$pkgname $pkgver-r$pkgrel (using $program $program_version) started $(date -R)"
 
-		# set time stamp for reproducible builds
-		export ABUILD_LAST_COMMIT="$(git_last_commit)$(git_dirty)"
-		if [ -z "$SOURCE_DATE_EPOCH" ] && [ "${ABUILD_LAST_COMMIT%-dirty}" = "$ABUILD_LAST_COMMIT" ]; then
-			SOURCE_DATE_EPOCH=$(git_last_commit_epoch $ABUILD_LAST_COMMIT)
-		fi
-		if [ -z "$SOURCE_DATE_EPOCH" ]; then
-			SOURCE_DATE_EPOCH=$(date -u "+%s")
-		fi
-		export SOURCE_DATE_EPOCH
+		# make sure SOURCE_DATE_EPOCH is set
+		set_source_date
 
 		for part in sanitycheck builddeps clean fetch unpack prepare mkusers build \
 				$_check rootpkg; do
@@ -1778,6 +1785,7 @@ check_fakeroot() {
 rootpkg() {
 	cd "$startdir"
 	rm -rf "$pkgdir"
+	set_source_date
 	[ -n "$FAKEROOT" ] && msg "Entering fakeroot..."
 
 	do_fakeroot "$abuild_path" $forceroot $color_opt $keep_build \
@@ -2139,6 +2147,9 @@ rootbld() {
 
 	# check early if we have abuild key
 	abuild-sign --installed
+
+	# make sure SOURCE_DATE_EPOCH is set
+	set_source_date
 
 	# networking business
 	sanitycheck
