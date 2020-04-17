@@ -9,16 +9,16 @@ set -e
 
 program_version=@VERSION@
 sysconfdir=@sysconfdir@
-datadir=@datadir@
+sharedir=@sharedir@
 
 abuild_path=$(readlink -f $0)
 git=$(command -v git) || git=true
 
-if ! [ -f "$datadir/functions.sh" ]; then
-	echo "$datadir/functions.sh: not found" >&2
+if ! [ -f "$sharedir/functions.sh" ]; then
+	echo "$sharedir/functions.sh: not found" >&2
 	exit 1
 fi
-. "$datadir/functions.sh"
+. "$sharedir/functions.sh"
 
 # defaults
 : ${FAKEROOT:="fakeroot"}
@@ -585,7 +585,7 @@ mkusers() {
 update_config_sub() {
 	find . -name config.sub -type f | (while read f; do
 		msg "Updating $f"
-		cp "$datadir"/${f##*/} "$f" || return 1
+		cp "$sharedir"/${f##*/} "$f" || return 1
 	done)
 }
 
@@ -593,7 +593,7 @@ update_config_sub() {
 update_config_guess() {
 	find . -name config.guess -type f | (while read f; do
 		msg "Updating $f"
-		cp "$datadir"/${f##*/} "$f" || return 1
+		cp "$sharedir"/${f##*/} "$f" || return 1
 	done)
 }
 
