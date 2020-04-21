@@ -680,7 +680,7 @@ postcheck() {
 	msg "Running postcheck for $name"
 
 	# check for packages still installing things into the wrong place
-	# exclude filesystem from check as it creates links
+	# exclude abyss-base from check as it creates links
 	if [ "$pkgname" != "abyss-base" ]; then
 		for i in "$dir"/bin/* "$dir"/sbin/* "$dir"/usr/sbin/* "$dir"/lib/*; do
 			if [ -e "$i" ]; then
@@ -2124,12 +2124,12 @@ builddeps() {
 	[ -n "$nodeps" ] && return 0
 
 	msg "Analyzing dependencies..."
-	if [ "$pkgname" = "filesystem" ]; then
+	if [ "$pkgname" = "abyss-base" ]; then
 		calcdeps ""
 	elif [ "$pkgname" = "musl" ]; then
-		calcdeps "filesystem"
+		calcdeps "abyss-base"
 	else
-		calcdeps "filesystem musl"
+		calcdeps "abyss-base musl"
 	fi
 
 	# find which deps are missing
