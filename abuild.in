@@ -358,10 +358,20 @@ sourcecheck() {
 }
 
 uri_fetch() {
-	local uri="$1"
+	local uri="$1" filename= namepart=
 	mkdir -p "$SRCDEST"
 	msg "Fetching $uri"
-	abuild-fetch -d "$SRCDEST" "$uri"
+	namepart="${uri##*/}"
+	filename="${uri%%::*}"
+	[ -n "$filename" ] && filename="$namepart"
+
+	[ -f "$SRCDEST/$filename" -a ! -f "$SRCDEST/${filename}.part" ] && return 0 # assume its already downloaded
+
+	# don't support resumption, get faster internet
+	if [ ! -f "$SRCDEST/$filename" ]; then
+		curl -fLo "$SRCDEST/${filename}.part" "$uri" && mv "$SRCDEST/${filename}.part" "$SRCDEST/$filename" || return 1
+	fi
+
 }
 
 is_remote() {
