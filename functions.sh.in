@@ -96,19 +96,16 @@ readconfig() {
 
 	[ -z "$CC" ] && CC=clang
 	[ -z "$CXX" ] && CXX=clang++
-	[ -z "$CBUILD" ] && CBUILD="$(apk --print-arch)"
-	[ -z "$ENDIAN" ] && CENDIAN="$(apk --print-endian)"
+
+	[ -z "$CBUILD_ARCH" ] && CBUILD_ARCH="$(apk --print-arch)"
+	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH=$CBUILD_ARCH
+	[ -z "$CTARGET_ENDIAN" ] && CTARGET_ENDIAN="$(apk --print-endian)"
+
+	[ -z "$CBUILD" ] && CBUILD="$CBUILD_ARCH"-abyss-linux-musl
+	[ -z "$ENDIAN" ] && CENDIAN=$CTARGET_ENDIAN
 	[ -z "$CHOST" ] && CHOST="$CBUILD"
 	[ -z "$CTARGET" ] && CTARGET="$CHOST"
-	[ "$(arch_to_hostspec $CBUILD)" != "unknown" ] && CBUILD="$(arch_to_hostspec $CBUILD)"
-	[ "$(arch_to_hostspec $CHOST)" != "unknown" ] && CHOST="$(arch_to_hostspec $CHOST)"
-	[ "$(arch_to_hostspec $CTARGET)" != "unknown" ] && CTARGET="$(arch_to_hostspec $CTARGET)"
-
-	[ -z "$CARCH" ] && CARCH="$(hostspec_to_arch $CHOST)"
-	[ -z "$CLIBC" ] && CLIBC="$(hostspec_to_libc $CHOST)"
-	[ -z "$CBUILD_ARCH" ] && CBUILD_ARCH="$(hostspec_to_arch $CBUILD)"
-	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH="$(hostspec_to_arch $CTARGET)"
-	[ -z "$CTARGET_LIBC" ] && CTARGET_LIBC="$(hostspec_to_libc $CTARGET)"
+	[ -z "$CARCH" ] && CARCH=$CTARGET
 
 	return 0
 }
