@@ -2204,111 +2204,12 @@ checksum() {
 	echo "b2sums=\"$b2sums\"" >>"$APKBUILD"
 }
 
-rootbld_actions() {
-	local part _check=check
-	if options_has "checkroot"; then
-		_check=check_fakeroot
-	fi
-	if ! want_check; then
-		_check=true
-	fi
-	for part in symlinksrc unpack prepare build $_check rootpkg; do
-		runpart $part
-	done
-}
-
 rootbld() {
+	# this wil be replaced eventually and contain useful rootbld
 	if apk_up2date && [ -z "$force" ]; then
 		msg "Package is up to date"
 		return
 	fi
-
-	apk info -eq abuild-rootbld || die "rootbld: abuild-rootbld package not installed"
-
-	logcmd "chroot building building $repo/$pkgname-$pkgver-r$pkgrel"
-
-	# check early if we have abuild key
-	abuild-sign --installed
-
-	# make sure SOURCE_DATE_EPOCH is set
-	set_source_date
-
-	# networking business
-	sanitycheck
-	clean
-	fetch
-	verify
-
-	msg "Preparing build chroot..."
-
-	mkusers
-
-	BUILD_ROOT=$(mktemp -d /var/tmp/abuild-$pkgname.XXXXXXXXXX)
-	local aportsgit=${APORTSDIR:-${startdir}}
-
-	mkdir -p "$BUILD_ROOT/proc" "$BUILD_ROOT/etc/apk/keys" \
-		"$BUILD_ROOT/$HOME/.abuild" "$BUILD_ROOT/$aportsgit" \
-		"$BUILD_ROOT/$SRCDEST" "$BUILD_ROOT/$REPODEST" \
-		"$BUILD_ROOT/tmp/pkg" "$BUILD_ROOT/tmp/src" \
-		"$BUILD_ROOT/usr/bin" "$pkgbasedir" "$REPODEST" \
-		"$srcdir"
-
-	cp /etc/abuild.conf /etc/group /etc/passwd "$BUILD_ROOT/etc"
-	cp /etc/apk/keys/* "$BUILD_ROOT/etc/apk/keys"
-
-	if options_has "net"; then
-		cp /etc/resolv.conf "$BUILD_ROOT/etc"
-	fi
-
-	local version="edge" buildhost="edge" gitref
-	if gitref="$(expr "$(git symbolic-ref --short HEAD)" : '\([0-9]\+\(\.[0-9]\+\)*\)-')"; then
-		version=v${gitref}
-		buildhost=${gitref/./-}
-	fi
-
-	local repo_template=$aportsgit/$repo/.rootbld-repositories
-	[ -s "$repo_template" ] || die "rootbld: $repo_template does not exist"
-	(
-		for key in $(git config --list --name-only); do
-			k=${key#abuild.}
-			[ $k != $key ] && \
-				eval "export $k=\"$(git config --get $key)\""
-		done
-
-		export mirror version
-		[ "$mirror" ] || mirror=http://dl-cdn.alpinelinux.org/alpine
-
-		envsubst
-		echo "$REPODEST/$repo"
-	) < "$repo_template" > "$BUILD_ROOT/etc/apk/repositories"
-
-	calcdeps
-	$APK add --initdb --root "$BUILD_ROOT" --update \
-		abuild filesystem
-
-	$APK add --root "$BUILD_ROOT" --update \
-		abuild musl git $builddeps
-
-	local bwrap_opts=""
-	options_has "net" || bwrap_opts="$bwrap_opts --unshare-net"
-	bwrap --unshare-ipc --unshare-uts $bwrap_opts \
-		--ro-bind "$BUILD_ROOT" / \
-		--proc /proc \
-		--dev-bind /dev /dev \
-		--bind "$BUILD_ROOT/$HOME" "$HOME" \
-		--ro-bind "$HOME/.abuild" "$HOME/.abuild" \
-		--ro-bind "$aportsgit" "$aportsgit" \
-		--bind "$SRCDEST" "$SRCDEST" \
-		--bind "$BUILD_ROOT/tmp" /tmp \
-		--bind "$BUILD_ROOT/tmp/src" "$srcdir" \
-		--bind "$BUILD_ROOT/tmp/pkg" "$pkgbasedir" \
-		--bind "$REPODEST" "$REPODEST" \
-		--hostname "build-$buildhost-$CARCH" \
-		--chdir "$startdir" \
-		--setenv PATH /bin:/usr/bin:/sbin:/usr/sbin \
-		/usr/bin/abuild $force rootbld_actions
-	update_abuildrepo_index
-	cleanup $CLEANUP
 }
 
 stripbin() {
@@ -2548,8 +2449,8 @@ usage() {
 		  listpkg     List target packages
 		  package     Install project into $pkgdir
 		  prepare     Apply patches
-		  rootbld     Build package in clean chroot
-		  rootpkg     Run 'package', the split functions and create apks as fakeroot
+		  rootbld     Build package in clean environment
+		  rootpkg     Run 'package', the split functions and create apks
 		  sanitycheck Basic sanity check of APKBUILD
 		  snapshot    Create a \$giturl or \$svnurl snapshot and upload to \$disturl
 		  sourcecheck Check if remote source package exists upstream
