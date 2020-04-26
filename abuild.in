@@ -2079,16 +2079,13 @@ trace_makedepends() {
 
 calcdeps() {
 	builddeps=
-	hostdeps=
 
-	[ -z "$makedepends" ] && makedepends="$makedepends_build $makedepends_host"
 	want_check && makedepends="$makedepends $checkdepends"
-	for i in $EXTRADEPENDS_BUILD $EXTRADEPENDS_HOST $1 $depends $makedepends; do
+	for i in $1 $depends $makedepends; do
 		[ "$pkgname" = "${i%%[<>=]*}" ] && continue
 		list_has $i $builddeps && continue
 		subpackages_has ${i%%[<>=]*} || builddeps="$builddeps $i"
 	done
-	hostdeps="$EXTRADEPENDS_TARGET"
 }
 
 get_missing_deps() {
@@ -2124,10 +2121,9 @@ builddeps() {
 	fi
 
 	# find which deps are missing
-	local mbd mhd missing
+	local mbd missing
 	mbd=$(get_missing_deps "" $builddeps) || return 1
-	mhd=$(get_missing_deps "--root $CBUILDROOT --arch $CTARGET_ARCH" $hostdeps) || return 1
-	missing=$(echo $mbd $mhd)
+	missing=$(echo $mbd)
 
 	if [ -z "$install_deps" ] && [ -z "$recursive" ]; then
 		# if we dont have any missing deps we are done now
@@ -2291,7 +2287,7 @@ rootbld() {
 		abuild filesystem
 
 	$APK add --root "$BUILD_ROOT" --update \
-		abuild musl git $hostdeps $builddeps
+		abuild musl git $builddeps
 
 	local bwrap_opts=""
 	options_has "net" || bwrap_opts="$bwrap_opts --unshare-net"
@@ -2419,7 +2415,7 @@ install_has() {
 }
 
 deps() {
-	[ -z "$hostdeps" -a -z "$builddeps" ] && calcdeps
+	[ -z "$builddeps" ] && calcdeps
 
 	local _quiet="$1"
 	[ -z "$_quiet" ] && msg "Installing for build:$builddeps"
@@ -2427,11 +2423,6 @@ deps() {
 		--virtual .makedepends-$pkgname \
 		$builddeps \
 		|| return 1
-	if [ -n "$CBUILDROOT" ]; then
-		[ -z "$_quiet" ] && msg "Installing for host:$hostdeps"
-		$APK add $_quiet --root "$CBUILDROOT" --arch "$CTARGET_ARCH" --repository "$REPODEST/$repo" $apk_opt_wait \
-			--no-scripts --virtual .makedepends-$pkgname $hostdeps || return 1
-	fi
 }
 
 undeps() {
