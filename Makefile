@@ -9,7 +9,7 @@ mandir		?= $(prefix)/share/man
 
 SCRIPTS		:= abuild abuild-keygen abuild-sign newapkbuild \
 		   abump apkgrel buildlab checkapk
-USR_BIN_FILES	:= $(SCRIPTS) abuild-tar abuild-gzsplit abuild-sudo abuild-fetch abuild-rmtemp
+USR_BIN_FILES	:= $(SCRIPTS) abuild-tar abuild-gzsplit abuild-fetch
 MAN_1_PAGES	:= newapkbuild.1
 MAN_5_PAGES	:= APKBUILD.5
 SAMPLES		:= sample.APKBUILD sample.initd sample.confd \
@@ -52,7 +52,6 @@ LIBS-abuild-tar.static = $(LIBS-abuild-tar)
 OBJS-abuild-gzsplit = abuild-gzsplit.o
 LDFLAGS-abuild-gzsplit = $(ZLIB_LIBS)
 
-OBJS-abuild-sudo = abuild-sudo.o
 OBJS-abuild-fetch = abuild-fetch.o
 
 .SUFFIXES:	.sh.in .in
@@ -69,13 +68,10 @@ P=$(PACKAGE)-$(VERSION)
 all:	$(USR_BIN_FILES) functions.sh
 
 clean:
-	@rm -f $(USR_BIN_FILES) functions.sh
+	@rm -f $(USR_BIN_FILES) functions.sh *.o
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS-$@) -o $@ -c $<
-
-abuild-sudo: abuild-sudo.o
-	$(LINK)
 
 abuild-tar: abuild-tar.o
 	$(LINK)
@@ -96,13 +92,9 @@ help:
 install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	install -d $(DESTDIR)/$(bindir) $(DESTDIR)/$(sysconfdir) $(DESTDIR)/$(sysconfdir)/abuild \
 		$(DESTDIR)/$(sharedir) $(DESTDIR)/$(mandir)/man1 \
-		$(DESTDIR)/$(mandir)/man5 $(DESTDIR)/$(sysconfdir)/sudoers.d
+		$(DESTDIR)/$(mandir)/man5
 	for i in $(USR_BIN_FILES); do\
 		install -m 755 $$i $(DESTDIR)/$(bindir)/$$i;\
-	done
-	chmod 4755 $(DESTDIR)/$(prefix)/bin/abuild-sudo
-	for i in adduser addgroup apk; do \
-		ln -fs abuild-sudo $(DESTDIR)/$(bindir)/abuild-$$i; \
 	done
 	for i in $(MAN_1_PAGES); do\
 		install -m 644 $$i $(DESTDIR)/$(mandir)/man1/$$i;\
@@ -113,7 +105,6 @@ install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	if [ -n "$(DESTDIR)" ] || [ ! -f "/$(sysconfdir)"/abuild.conf ]; then\
 		cp abuild.conf $(DESTDIR)/$(sysconfdir)/; \
 	fi
-	install -m0440 sudoers $(DESTDIR)/$(sysconfdir)/sudoers.d/abuild
 
 	cp $(SAMPLES) $(DESTDIR)/$(prefix)/share/abuild/
 	cp $(AUTOTOOLS_TOOLCHAIN_FILES) $(DESTDIR)/$(prefix)/share/abuild/
@@ -122,7 +113,7 @@ install: $(USR_BIN_FILES) $(SAMPLES) abuild.conf functions.sh
 	install -m644 defaults_$(CARCH).conf $(DESTDIR)/$(sysconfdir)/abuild/defaults.conf
 
 depends depend:
-	sudo apk --no-cache -U --virtual .abuild-depends add openssl-dev zlib-dev
+	apk --no-cache -U --virtual .abuild-depends add openssl-dev zlib-dev
 
 .gitignore: Makefile
 	echo "*.tar.bz2" > $@
