@@ -2330,11 +2330,7 @@ stripbin() {
 	cd "${subpkgdir:-$pkgdir}" || return 1
 
 	local stripcmd=strip
-	case "${subpkgarch:-$pkgarch}" in
-	$CBUILD_ARCH)	stripcmd="strip" ;;
-	$CARCH)		stripcmd="${CHOST}-strip" ;;
-	$CTARGET_ARCH)	stripcmd="${CTARGET}-strip" ;;
-	esac
+	[ -n "$STRIP" ] && stripcmd=$STRIP
 
 	msg "Stripping binaries"
 	scanelf --recursive --nobanner --osabi --etype "ET_DYN,ET_EXEC" . \
