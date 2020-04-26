@@ -9,7 +9,7 @@ mandir		?= $(prefix)/share/man
 
 SCRIPTS		:= abuild abuild-keygen abuild-sign newapkbuild \
 		   abump apkgrel buildlab checkapk
-USR_BIN_FILES	:= $(SCRIPTS) abuild-tar abuild-gzsplit abuild-fetch
+USR_BIN_FILES	:= $(SCRIPTS) abuild-tar abuild-gzsplit
 MAN_1_PAGES	:= newapkbuild.1
 MAN_5_PAGES	:= APKBUILD.5
 SAMPLES		:= sample.APKBUILD sample.initd sample.confd \
@@ -52,8 +52,6 @@ LIBS-abuild-tar.static = $(LIBS-abuild-tar)
 OBJS-abuild-gzsplit = abuild-gzsplit.o
 LDFLAGS-abuild-gzsplit = $(ZLIB_LIBS)
 
-OBJS-abuild-fetch = abuild-fetch.o
-
 .SUFFIXES:	.sh.in .in
 %.sh: %.sh.in
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
@@ -74,9 +72,6 @@ clean:
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS-$@) -o $@ -c $<
 
 abuild-tar: abuild-tar.o
-	$(LINK)
-
-abuild-fetch: abuild-fetch.o
 	$(LINK)
 
 abuild-gzsplit: abuild-gzsplit.o
