@@ -358,12 +358,9 @@ sourcecheck() {
 }
 
 uri_fetch() {
-	local uri="$1" filename= namepart=
+	local uri="$1" filename=$(filename_from_uri "$uri")
 	mkdir -p "$SRCDEST"
 	msg "Fetching $uri"
-	namepart="${uri##*/}"
-	filename="${uri%%::*}"
-	[ -n "$filename" ] && filename="$namepart"
 
 	[ -f "$SRCDEST/$filename" -a ! -f "$SRCDEST/${filename}.part" ] && return 0 # assume its already downloaded
 
