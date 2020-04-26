@@ -105,7 +105,7 @@ readconfig() {
 	[ -z "$ENDIAN" ] && CENDIAN=$CTARGET_ENDIAN
 	[ -z "$CHOST" ] && CHOST="$CBUILD"
 	[ -z "$CTARGET" ] && CTARGET="$CHOST"
-	[ -z "$CARCH" ] && CARCH=$CTARGET
+	[ -z "$CARCH" ] && CARCH=$CTARGET_ARCH
 
 	return 0
 }
