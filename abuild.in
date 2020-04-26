@@ -1249,14 +1249,7 @@ subpkg_provides_pc() {
 trace_apk_deps() {
 	local name="$1"
 	local dir="$2"
-	local parch="$3"
 	local i= found= autodeps= deppkgs= missing=
-	local apkroot=
-
-	case "$parch" in
-	$CBUILD_ARCH) ;;
-	$CARCH | $CTARGET_ARCH) apkroot="--root $CBUILDROOT --arch $CTARGET_ARCH" ;;
-	esac
 
 	msg "Tracing dependencies..."
 	# add pkgconfig if usr/lib/pkgconfig is found
@@ -1272,7 +1265,7 @@ trace_apk_deps() {
 		if subpkg_provides_prefixed_so "$i"; then
 			autodeps="$autodeps so:$sonameprefix$i"
 		elif subpkg_provides_so "$i" \
-				|| $APK $apkroot info --quiet --installed "so:$i"; then
+				|| $APK info --quiet --installed "so:$i"; then
 			autodeps="$autodeps so:$i"
 		else
 			missing="$missing $i"
@@ -1283,7 +1276,7 @@ trace_apk_deps() {
 	if [ -f "$dir"/.rpaths ]; then
 		local so_files=$(find_so_files "$dir"/.rpaths $missing) \
 			|| return 1
-		deppkgs=$($APK $apkroot info --quiet --who-owns $so_files) || return 1
+		deppkgs=$($APK info --quiet --who-owns $so_files) || return 1
 	fi
 
 	for found in $deppkgs; do
@@ -1307,8 +1300,8 @@ trace_apk_deps() {
 		if subpkg_provides_prefixed_pc "$i"; then
 			autodeps="$autodeps pc:$pcprefix$i"
 		elif subpkg_provides_pc "$i" \
-				|| $APK $apkroot info --quiet --installed "pc:$i"; then
-			local provider=$($APK $apkroot search --quiet "pc:$i")
+				|| $APK info --quiet --installed "pc:$i"; then
+			local provider=$($APK search --quiet "pc:$i")
 			if list_has "$provider" $depends_dev; then
 				warning "$provider should be removed from depends_dev"
 			fi
@@ -1318,7 +1311,7 @@ trace_apk_deps() {
 			for d in share lib; do
 				local pcfile=/usr/$d/pkgconfig/"${i%%[<>=]*}".pc
 				if [ -e "$pcfile" ]; then
-					local owner=$($APK $apkroot info --quiet --who-owns $pcfile)
+					local owner=$($APK info --quiet --who-owns $pcfile)
 					warning "${owner:-package providing $pcfile} needs to be rebuilt"
 				fi
 			done
