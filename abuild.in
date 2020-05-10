@@ -677,7 +677,7 @@ build() {
 targz() {
 	cd "$pkgdir" || return 1
 	mkdir -p "$REPODEST"/src
-	command bsdtar -czf "$REPODEST"/src/$pkgname-$pkgver-r$pkgrel.tar.gz *
+	bsdtar -czf "$REPODEST"/src/$pkgname-$pkgver-r$pkgrel.tar.gz *
 }
 
 postcheck() {
@@ -1570,7 +1570,7 @@ create_apks() {
 
 		find "$@" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 		# explicitly sort package content
-		find "$@" -print0 | LC_ALL=C sort -z | command bsdtar --xattrs \
+		find "$@" -print0 | LC_ALL=C sort -z | bsdtar --xattrs \
 			--format=posix \
 			--no-recursion --null -T - \
 			-f - -c | abuild-tar --hash | pigz -n -9 >"$dir"/data.tar.gz
@@ -1582,7 +1582,7 @@ create_apks() {
 
 		# control.tar.gz
 		cd "$dir"
-		command bsdtar \
+		bsdtar \
 			--format=posix \
 			-f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| pigz -n -9 > control.tar.gz
@@ -1911,7 +1911,7 @@ srcpkg() {
 
 	mkdir -p "$REPODEST/src"
 	msg "Creating source package $p.src.tar.gz..."
-	(cd .. && command bsdtar -zcf "$REPODEST/src/$p.src.tar.gz" $files)
+	(cd .. && bsdtar -zcf "$REPODEST/src/$p.src.tar.gz" $files)
 }
 
 # return true if arch is supported or noarch
@@ -2395,7 +2395,7 @@ snapshot() {
 		[ -n "$reporev" ] && local _rev="-r $reporev"
 		msg "Creating svn snapshot: $pkgname-$_version"
 		svn co $_rev $svnurl $pkgname-$_version || return 1
-		command bsdtar zcf $pkgname-$_version.$_format $pkgname-$_version || return 1
+		bsdtar zcf $pkgname-$_version.$_format $pkgname-$_version || return 1
 	fi
 	# upload to defined distfiles url
 	if [ -n "$disturl" ]; then
