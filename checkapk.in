@@ -73,17 +73,17 @@ for i in $pkgname $subpackages; do
 	fi
 
 	apk fetch --quiet --repositories-file $tmpdir/repositories --stdout $_pkgname \
-		| tar -zt | grep -v '^\.SIGN\.' | sort > filelist-$_pkgname-old \
+		| bsdtar -zt | grep -v '^\.SIGN\.' | sort > filelist-$_pkgname-old \
 		|| die "failed to download old pkg, maybe run 'apk update'?"
 
-	tar -ztf "$filepath" | grep -v '^\.SIGN\.' | sort > "filelist-$_pkgname"
+	bsdtar -ztf "$filepath" | grep -v '^\.SIGN\.' | sort > "filelist-$_pkgname"
 
 	diff -u "filelist-$_pkgname-old" "filelist-$_pkgname"
 
 	if diff "filelist-$_pkgname-old" "filelist-$_pkgname" | grep '\.so' > /dev/null 2>&1; then
 		mkdir -p pkg
 		cd pkg
-		tar -zxf "$filepath" > /dev/null
+		bsdtar -zxf "$filepath" > /dev/null
 		diff "../filelist-$_pkgname-old" "../filelist-$_pkgname" | awk '/>.*\.so/{$1 = ""; print $0}' | while read i; do
 			echo "${i}: " "$(objdump -p "$i" | grep SONAME)"
 		done
