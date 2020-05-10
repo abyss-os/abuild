@@ -1572,6 +1572,8 @@ create_apks() {
 		# explicitly sort package content
 		find "$@" -print0 | LC_ALL=C sort -z | bsdtar --xattrs \
 			--format=posix \
+			--pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0,ctime:=0 \
+			--mtime="@${SOURCE_DATE_EPOCH}" \
 			--no-recursion --null -T - \
 			-f - -c | abuild-tar --hash | pigz -n -9 >"$dir"/data.tar.gz
 
@@ -1584,6 +1586,8 @@ create_apks() {
 		cd "$dir"
 		bsdtar \
 			--format=posix \
+			--pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0,ctime:=0 \
+			--mtime="@${SOURCE_DATE_EPOCH}" \
 			-f - -c $(cat "$dir"/.metafiles) | abuild-tar --cut \
 			| pigz -n -9 > control.tar.gz
 		abuild-sign -q control.tar.gz || exit 1
