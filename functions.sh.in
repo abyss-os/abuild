@@ -98,6 +98,9 @@ readconfig() {
 	[ -z "$CXX" ] && CXX=clang++
 
 	[ -z "$CBUILD_ARCH" ] && CBUILD_ARCH="$(apk --print-arch)"
+	case "$CBUILD_ARCH" in
+		ppc64le) CBUILD_ARCH=powerpc64le;;
+	esac
 	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH=$CBUILD_ARCH
 	[ -z "$CTARGET_ENDIAN" ] && CTARGET_ENDIAN="$(apk --print-endian)"
 
