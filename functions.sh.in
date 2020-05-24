@@ -97,10 +97,15 @@ readconfig() {
 	[ -z "$CC" ] && CC=clang
 	[ -z "$CXX" ] && CXX=clang++
 
-	[ -z "$CBUILD_ARCH" ] && CBUILD_ARCH="$(apk --print-arch)"
-	case "$CBUILD_ARCH" in
+	[ -z "$CARCH" ] && CARCH="$(apk --print-arch)"
+
+	# overrides
+	case "$CARCH" in
+		ppc64) CBUILD_ARCH=powerpc64;;
 		ppc64le) CBUILD_ARCH=powerpc64le;;
 	esac
+
+	[ -z "$CBUILD_ARCH" ] && CBUILD_ARCH="$CARCH"
 	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH=$CBUILD_ARCH
 	[ -z "$CTARGET_ENDIAN" ] && CTARGET_ENDIAN="$(apk --print-endian)"
 
@@ -108,7 +113,6 @@ readconfig() {
 	[ -z "$ENDIAN" ] && CENDIAN=$CTARGET_ENDIAN
 	[ -z "$CHOST" ] && CHOST="$CBUILD"
 	[ -z "$CTARGET" ] && CTARGET="$CHOST"
-	[ -z "$CARCH" ] && CARCH=$CTARGET_ARCH
 
 	return 0
 }
