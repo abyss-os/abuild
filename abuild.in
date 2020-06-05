@@ -2348,7 +2348,7 @@ index() { update_abuildrepo_index; }
 all() {
 	if ! [ -n "$force" ]; then
 		if ! check_arch; then
-			echo "Package not available for the target architecture ($CARCH). Aborting."
+			msg "Package not available for the target architecture ($CARCH). Aborting."
 			return 0
 		fi
 		check_libc || return 0
