@@ -889,16 +889,7 @@ git_last_commit_epoch() {
 	$git log -1 --format=%cd --date=unix $1 -- "$startdir"
 }
 
-get_maintainer() {
-	if [ -z "$maintainer" ]; then
-		maintainer=$(awk -F': ' '/# *Maintainer/ {print $2}' "$APKBUILD")
-		# remove surrounding whitespace
-		maintainer=$(echo "$maintainer" | xargs)
-	fi
-}
-
 check_maintainer() {
-	get_maintainer
 	if [ -z "$maintainer" ]; then
 		warning "No maintainer"
 	else
@@ -1024,7 +1015,6 @@ prepare_metafiles() {
 	fi
 	echo "commit = $ABUILD_LAST_COMMIT" >> "$pkginfo"
 
-	get_maintainer
 	if [ -n "$maintainer" ]; then
 		echo "maintainer = $maintainer" >> "$pkginfo"
 	fi
