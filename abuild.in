@@ -444,6 +444,8 @@ initdcheck() {
 		case "$line" in
 		*sbin/openrc-run)
 			;;
+		*usr/bin/openrc-run)
+			;;
 		*sbin/runscript)
 			warning "$i is not an openrc #!/sbin/openrc-run"
 			;;
