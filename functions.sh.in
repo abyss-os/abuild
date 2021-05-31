@@ -5,12 +5,12 @@ program=${0##*/}
 
 arch_to_hostspec() {
 	case "$1" in
-	aarch64)	echo "aarch64-abyss-linux-musl" ;;
-	mips64)         echo "mips64-abyss-linux-musl" ;;
-	mips64el)       echo "mips64el-abyss-linux-musl" ;;
-	ppc64le)	echo "powerpc64le-abyss-linux-musl" ;;
-	riscv64)	echo "riscv64-abyss-linux-musl" ;;
-	x86_64)		echo "x86_64-abyss-linux-musl" ;;
+	aarch64)	echo "aarch64-unknown-linux-musl" ;;
+	mips64)         echo "mips64-unknown-linux-musl" ;;
+	mips64el)       echo "mips64el-unknown-linux-musl" ;;
+	ppc64le)	echo "powerpc64le-unknown-linux-musl" ;;
+	riscv64)	echo "riscv64-unknown-linux-musl" ;;
+	x86_64)		echo "x86_64-unknown-linux-musl" ;;
 	*)		echo "unknown" ;;
 	esac
 }
@@ -109,7 +109,7 @@ readconfig() {
 	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH=$CBUILD_ARCH
 	[ -z "$CTARGET_ENDIAN" ] && CTARGET_ENDIAN="$(apk --print-endian)"
 
-	[ -z "$CBUILD" ] && CBUILD="$CBUILD_ARCH"-abyss-linux-musl
+	[ -z "$CBUILD" ] && CBUILD="$CBUILD_ARCH"-unknown-linux-musl
 	[ -z "$ENDIAN" ] && CENDIAN=$CTARGET_ENDIAN
 	[ -z "$CHOST" ] && CHOST="$CBUILD"
 	[ -z "$CTARGET" ] && CTARGET="$CHOST"
