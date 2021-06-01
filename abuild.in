@@ -631,23 +631,10 @@ getpkgver() {
 	fi
 }
 
-have_patches() {
-	local i
-	for i in $source; do
-		case ${i%::*} in
-			*.patch|*.patch.gz|*.patch.xz) return 0;;
-		esac
-	done
-	return 1
-}
-
 default_prepare() {
 	config_helper
 	local i
 	[ -n "$builddir" -a -d "$builddir" ] && cd "$builddir"
-	if ! have_patches; then
-		return 0
-	fi
 	[ -d "$builddir" ] || { error "Is \$builddir set correctly?"; return 1; }
 
     # to be removed once migration to patches/ is complete
