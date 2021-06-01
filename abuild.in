@@ -649,6 +649,8 @@ default_prepare() {
 		return 0
 	fi
 	[ -d "$builddir" ] || { error "Is \$builddir set correctly?"; return 1; }
+
+    # to be removed once migration to patches/ is complete
 	for i in $source; do
 		case ${i%::*} in
 			*.patch)
@@ -665,6 +667,29 @@ default_prepare() {
 				;;
 		esac
 	done
+
+    # Rather than listing all patches in sources and having to checksum them, implement a versioned patch thing
+    # that works roughly like so:
+    #
+    # patches/*.patch (glob order)
+    # patches/$pkgver/*.patch (glob order)
+    # this sucks so bad
+    if [ -d ${startdir}/patches ]; then
+        msg "Applying patches from ${startdir}/patches..."
+        i=
+        for i in ${startdir}/patches/*.patch; do
+            msg ${i##*/}
+            patch ${patch_args:--p1} < $i || return 1
+        done
+        if [ -d ${startdir}/patches/$pkgver ]; then
+            msg "Applying patches from ${startdir}/patches/$pkgver..."
+            i=
+            for i in ${startdir}/patches/$pkgver/*.patch; do
+                msg ${i##*/}
+                patch ${patch_args:--p1} < $i || return 1
+            done
+        fi
+    fi
 }
 
 prepare() {

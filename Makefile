@@ -1,5 +1,5 @@
 PACKAGE		:= abuild
-VERSION		:= 4.0.3
+VERSION		:= 4.0.69
 
 prefix		?= /usr
 bindir		?= $(prefix)/bin
@@ -18,13 +18,7 @@ AUTOTOOLS_TOOLCHAIN_FILES := config.sub config.guess
 
 SCRIPT_SOURCES	:= $(addsuffix .in,$(SCRIPTS))
 
-GIT_REV		:= $(shell test -d .git && git describe || echo exported)
-ifneq ($(GIT_REV), exported)
-FULL_VERSION    := $(patsubst $(PACKAGE)-%,%,$(GIT_REV))
-FULL_VERSION    := $(patsubst v%,%,$(FULL_VERSION))
-else
 FULL_VERSION    := $(VERSION)
-endif
 
 CARCH		:= $(shell apk --print-arch)
 CHMOD		:= chmod
