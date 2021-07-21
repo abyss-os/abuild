@@ -1264,7 +1264,7 @@ trace_apk_deps() {
 	# add pkgconfig if usr/lib/pkgconfig is found
 	if [ -d "$pkgbasedir"/$name/usr/lib/pkgconfig ] || [ -d "$pkgbasedir"/$name/usr/share/pkgconfig ] \
 			&& ! grep -q '^depend = pkgconfig' "$dir"/.PKGINFO; then
-		autodeps="$autodeps pkgconfig"
+		autodeps="$autodeps pkgconf"
 	fi
 
 	[ -f "$dir"/.needs-so ] && for i in $(cat "$dir"/.needs-so); do
