@@ -10,6 +10,7 @@ arch_to_hostspec() {
 	mips64el)       echo "mips64el-unknown-linux-musl" ;;
 	ppc64le)	echo "powerpc64le-unknown-linux-musl" ;;
 	riscv64)	echo "riscv64-unknown-linux-musl" ;;
+    x86_32)     echo "x86_64-unknown-linux-muslx32" ;;
 	x86_64)		echo "x86_64-unknown-linux-musl" ;;
 	*)		echo "unknown" ;;
 	esac
@@ -18,10 +19,11 @@ arch_to_hostspec() {
 hostspec_to_arch() {
 	case "$1" in
 	aarch64*-*-*-*)		echo "aarch64" ;;
-	mips64-*-*-*)           echo "mips64" ;;
-	mips64el-*-*-*)         echo "mips64el" ;;
+	mips64-*-*-*)       echo "mips64" ;;
+	mips64el-*-*-*)     echo "mips64el" ;;
 	powerpc64le-*-*-*)	echo "ppc64le" ;;
 	riscv64-*-*-*)		echo "riscv64" ;;
+	x86_64-*-*-*x32)	echo "x86_32" ;;
 	x86_64-*-*-*)		echo "x86_64" ;;
 	*)			echo "unknown" ;;
 	esac
@@ -62,13 +64,13 @@ readconfig() {
 	gitbase=$(git rev-parse --show-toplevel 2>/dev/null) || true # already is -P
 	if [ -d "$APORTSDIR" ]; then
 		APORTSDIR=$(cd "$APORTSDIR"; pwd -P)
-	elif [ -z "$APORTSDIR" ] && [ -d "$HOME/aports" ]; then
-		APORTSDIR=$(cd "$HOME/aports"; pwd -P)
+	elif [ -z "$APORTSDIR" ] && [ -d "$HOME/phase1" ]; then
+		APORTSDIR=$(cd "$HOME/phase1"; pwd -P)
 	else
 		if [ -n "$gitbase" ]; then
 			case $(git remote get-url origin) in
 			# '.git' for SSH URLs, and no suffix for HTTPS URLs
-			*/aports|*/aports.git) APORTSDIR=$gitbase ;;
+			*/phase1|*/phase1.git) APORTSDIR=$gitbase ;;
 			*) APORTSDIR= ;;
 			esac
 		else
@@ -109,7 +111,7 @@ readconfig() {
 	[ -z "$CTARGET_ARCH" ] && CTARGET_ARCH=$CBUILD_ARCH
 	[ -z "$CTARGET_ENDIAN" ] && CTARGET_ENDIAN="$(apk --print-endian)"
 
-	[ -z "$CBUILD" ] && CBUILD="$CBUILD_ARCH"-unknown-linux-musl
+    [ -z "$CBUILD" ] && CBUILD=$(arch_to_hostspec $CBUILD_ARCH)
 	[ -z "$ENDIAN" ] && CENDIAN=$CTARGET_ENDIAN
 	[ -z "$CHOST" ] && CHOST="$CBUILD"
 	[ -z "$CTARGET" ] && CTARGET="$CHOST"
