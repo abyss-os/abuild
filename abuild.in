@@ -1525,13 +1525,7 @@ upload_apk() {
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}"
 
-	if [ -z "${MC_HOST_master}" ]; then
-		error "upload: no target"
-    elif [ -z "${ABYSS_BUCKET}" ]; then
-        error "upload: no bucket"
-	else
-		mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}"\;origin="${origin}" ${file} master/${ABYSS_BUCKET}/${repo}/${arch}/${apk}
-	fi
+	mcli cp --attr repo="${repo}"\;gitrepo="${DRONE_REPO_NAME}"\;owner="${DRONE_REPO_OWNER}"\;author="${DRONE_COMMIT_AUTHOR}"\;stage="${DRONE_STAGE_NAME}"\;arch="${arch}"\;ts="${DRONE_BUILD_STARTED}"\;commit="${DRONE_COMMIT}"\;apk="${apk}"\;size="${size}"\;pkgname="${pkgname}"\;pkgver="${pkgver}"\;origin="${origin}" ${file} master/${ABYSS_BUCKET}/${repo}/${arch}/${apk}
 }
 
 create_apks() {
