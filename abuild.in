@@ -1525,7 +1525,14 @@ upload_apk() {
 	hsize=$(echo ${size} | human_size)
 	msg "Uploading ${name}-${ver}"
 
-    aws s3 cp ${file} s3://${ABYSS_BUCKET}/${repo}/${arch}/${apk} --acl public-read --metadata repo="${repo}",gitrepo="${DRONE_REPO_NAME}",owner="${DRONE_REPO_OWNER}",author="${DRONE_COMMIT_AUTHOR}",stage="${DRONE_STAGE_NAME}",arch="${arch}",ts="${DRONE_BUILD_STARTED}",commit="${DRONE_COMMIT}",apk="${apk}",size="${size}",pkgname="${pkgname}",pkgver="${pkgver}",origin="${origin}" ${file} master/${ABYSS_BUCKET}/${repo}/${arch}/${apk}
+    aws s3 cp ${file} s3://${ABYSS_BUCKET}/${repo}/${arch}/${apk} --acl public-read --metadata repo="${repo}",gitrepo="${DRONE_REPO_NAME}",owner="${DRONE_REPO_OWNER}",author="${DRONE_COMMIT_AUTHOR}",stage="${DRONE_STAGE_NAME}",arch="${arch}",ts="${DRONE_BUILD_STARTED}",commit="${DRONE_COMMIT}",apk="${apk}",size="${size}",pkgname="${pkgname}",pkgver="${pkgver}",origin="${origin}"
+}
+
+notify_apk() {
+	local repo="${1}" arch="${2}" apk="${3}"
+	msg "Notifying ${name}-${ver}"
+
+    curl -X POST -d repo="${repo}" -d arch="${arch}" -d apk="${apk}" ${ABYSS_NOTIFY}
 }
 
 create_apks() {
@@ -1596,7 +1603,8 @@ create_apks() {
 		mkdir -p "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
-		[ -z "${DRONE}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}" "${origin}"
+		[ -z "${ABYSS_BUCKET}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}" "${origin}"
+		[ -z "${ABYSS_NOTIFY}" ] || upload_apk "${repo}" "${arch}" "${apk}"
 		)
 	done
 }
