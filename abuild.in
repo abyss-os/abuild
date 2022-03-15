@@ -1529,7 +1529,7 @@ upload_apk() {
 }
 
 notify_apk() {
-	local repo="${1}" arch="${2}" apk="${3}"
+	local name="${1}" ver="${2}" repo="${3}" arch="${4}" apk="${5}"
 	msg "Notifying ${name}-${ver}"
 
     curl -X POST -d repo="${repo}" -d arch="${arch}" -d apk="${apk}" ${ABYSS_NOTIFY}
@@ -1604,7 +1604,7 @@ create_apks() {
 		cat control.tar.gz data.tar.gz > "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/$apk
 
 		[ -z "${ABYSS_BUCKET}" ] || upload_apk "${name}" "${ver}" "$REPODEST"/$repo/${subpkgarch/noarch/$CARCH}/${apk} "${size}" "${subpkgarch}" "${apk}" "${repo}" "${subpkgarch/noarch/$CARCH}" "${origin}"
-		[ -z "${ABYSS_NOTIFY}" ] || upload_apk "${repo}" "${arch}" "${apk}"
+		[ -z "${ABYSS_NOTIFY}" ] || notify_apk "${name}" "${ver}" "${repo}" "${arch}" "${apk}"
 		)
 	done
 }
